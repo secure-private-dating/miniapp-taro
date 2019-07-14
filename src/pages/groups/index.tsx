@@ -68,6 +68,12 @@ class Groups extends Component {
     componentDidHide() {
     }
 
+    onClickEnter() {
+        Taro.redirectTo({
+            url: '/pages/group/index'
+        })
+    }
+
     render() {
         return (
             <View className='container'>
@@ -86,7 +92,8 @@ class Groups extends Component {
                             <Text>UM-SJTU Joint Institute</Text>
                         </View>
                         <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover">
+                            <Button type="default" hover-class="other-button-hover"
+                                    onClick={this.onClickEnter}>
                                 Enter
                             </Button>
                         </View>
