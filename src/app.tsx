@@ -1,8 +1,9 @@
 import '@tarojs/async-await'
 import Taro, { Component, Config } from '@tarojs/taro'
 import { Provider } from '@tarojs/redux'
+import getRandomValues from 'polyfill-crypto.getrandomvalues'
 
-import Index from './pages/index'
+import Index from './pages/groups'
 
 import configStore from './store'
 
@@ -27,7 +28,8 @@ class App extends Component {
    */
   config: Config = {
     pages: [
-      'pages/index/index'
+      'pages/index/index',
+      'pages/groups/index'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -37,7 +39,25 @@ class App extends Component {
     }
   }
 
-  componentDidMount () {}
+  componentDidMount () {
+      // Init tweetnacl in weapp with some tricks
+      try {
+          require('tweetnacl')
+      } catch (e) {
+          //console.log(e)
+      }
+      const nacl = require('tweetnacl');
+
+      const QUOTA = 65536;
+      nacl.setPRNG(function (x, n) {
+          let i, v = new Uint8Array(n);
+          for (i = 0; i < n; i += QUOTA) {
+              getRandomValues(v.subarray(i, i + Math.min(n - i, QUOTA)));
+          }
+          for (i = 0; i < n; i++) x[i] = v[i];
+          for (i = 0; i < v.length; i++) v[i] = 0;
+      });
+  }
 
   componentDidShow () {}
 

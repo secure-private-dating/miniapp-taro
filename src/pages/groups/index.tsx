@@ -7,11 +7,6 @@ import {add, minus, asyncAdd} from '../../actions/counter'
 
 import './index.scss'
 
-
-import nacl from 'tweetnacl'
-import naclUtil from 'tweetnacl-util'
-
-
 // #region 书写注意
 //
 // 目前 typescript 版本还无法在装饰器模式下将 Props 注入到 Taro.Component 中的 props 属性
@@ -40,7 +35,7 @@ type PageState = {}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
-interface Index {
+interface Groups {
     props: IProps;
 }
 
@@ -57,7 +52,7 @@ interface Index {
         dispatch(asyncAdd())
     }
 }))
-class Index extends Component {
+class Groups extends Component {
 
     /**
      * 指定config的类型声明为: Taro.Config
@@ -67,7 +62,7 @@ class Index extends Component {
      * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
      */
     config: Config = {
-        navigationBarTitleText: '首页'
+        navigationBarTitleText: 'Groups'
     }
 
     componentWillReceiveProps(nextProps) {
@@ -78,43 +73,19 @@ class Index extends Component {
     }
 
     componentDidShow() {
-        // console.log(window);
-        //
-        console.log(1111);
-        const alice = nacl.box.keyPair()
-        const bob = nacl.box.keyPair()
-        const nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
-        const plaintext = 'LYHSB'
-        const box = nacl.box(naclUtil.decodeUTF8(plaintext), nonce,
-            alice.publicKey, bob.secretKey)
-        const message = {box, nonce}
-        console.log(JSON.stringify(message))
-        const payload = nacl.box.open(message.box, message.nonce, bob.publicKey,
-            alice.secretKey)
-        if (payload) {
-            const utf8 = naclUtil.encodeUTF8(payload)
-            console.log(utf8)
-        }
+
     }
 
     componentDidHide() {
     }
 
-    onClickGroups() {
-        Taro.redirectTo({
-            url: '/pages/groups/index'
-        })
-    }
-
     render() {
         return (
             <View className='index'>
-                {/*<Button className='add_btn' onClick={this.props.add}>+</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.dec}>-</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
-                {/*<View><Text>{this.props.counter.num}</Text></View>*/}
-
-                <Button className='dec_btn' onClick={this.onClickGroups}>Groups</Button>
+                <Button className='add_btn' onClick={this.props.add}>+</Button>
+                <Button className='dec_btn' onClick={this.props.dec}>-</Button>
+                <Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>
+                <View><Text>{this.props.counter.num}</Text></View>
                 <View><Text>Hello, World</Text></View>
             </View>
         )
@@ -128,4 +99,4 @@ class Index extends Component {
 //
 // #endregion
 
-export default Index as ComponentClass<PageOwnProps, PageState>
+export default Groups as ComponentClass<PageOwnProps, PageState>
