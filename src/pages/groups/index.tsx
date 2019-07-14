@@ -1,11 +1,13 @@
 import {ComponentClass} from 'react'
 import Taro, {Component, Config} from '@tarojs/taro'
-import {View, Button, Text} from '@tarojs/components'
-import {connect} from '@tarojs/redux'
-
-import {add, minus, asyncAdd} from '../../actions/counter'
+import {View, Button, Text, Image} from '@tarojs/components'
+// import {connect} from '@tarojs/redux'
+//
+// import {add, minus, asyncAdd} from '../../actions/counter'
 
 import './index.scss'
+
+import umjiImage from '../../static/images/umji.jpg'
 
 // #region 书写注意
 //
@@ -39,19 +41,6 @@ interface Groups {
     props: IProps;
 }
 
-@connect(({counter}) => ({
-    counter
-}), (dispatch) => ({
-    add() {
-        dispatch(add())
-    },
-    dec() {
-        dispatch(minus())
-    },
-    asyncAdd() {
-        dispatch(asyncAdd())
-    }
-}))
 class Groups extends Component {
 
     /**
@@ -81,12 +70,28 @@ class Groups extends Component {
 
     render() {
         return (
-            <View className='index'>
-                <Button className='add_btn' onClick={this.props.add}>+</Button>
-                <Button className='dec_btn' onClick={this.props.dec}>-</Button>
-                <Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>
-                <View><Text>{this.props.counter.num}</Text></View>
-                <View><Text>Hello, World</Text></View>
+            <View className='container'>
+                {/*<Button className='add_btn' onClick={this.props.add}>+</Button>*/}
+                {/*<Button className='dec_btn' onClick={this.props.dec}>-</Button>*/}
+                {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
+                {/*<View><Text>{this.props.counter.num}</Text></View>*/}
+                {/*<View><Text>Hello, World</Text></View>*/}
+                <View className="section" style={{width: '85%'}}>
+                    <View className="section__title">Groups:</View>
+                    <View className="flex-row" style="display: flex; align-items: center;">
+                        <View className="flex-view-item">
+                            <Image className="userinfo-avatar" src={umjiImage}/>
+                        </View>
+                        <View className="flex-view-item">
+                            <Text>UM-SJTU Joint Institute</Text>
+                        </View>
+                        <View className="flex-view-item" style="margin-left: auto;">
+                            <Button type="default" hover-class="other-button-hover">
+                                Enter
+                            </Button>
+                        </View>
+                    </View>
+                </View>
             </View>
         )
     }
