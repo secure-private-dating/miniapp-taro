@@ -1,13 +1,12 @@
 import {ComponentClass} from 'react'
 import Taro, {Component, Config} from '@tarojs/taro'
-import {View, Button, Text, Image} from '@tarojs/components'
+import {View} from '@tarojs/components'
 // import {connect} from '@tarojs/redux'
 //
 // import {add, minus, asyncAdd} from '../../actions/counter'
 
 import './index.scss'
-
-import umjiImage from '../../static/images/umji.jpg'
+import GroupItem from '../../components/GroupItem'
 
 // #region 书写注意
 //
@@ -33,12 +32,19 @@ type PageDispatchProps = {
 
 type PageOwnProps = {}
 
-type PageState = {}
+type PageState = {
+    groups: Array<{
+        name: string,
+        avatar: string
+        _id: { $oid: string }
+    }>;
+}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
 interface Groups {
     props: IProps;
+    state: PageState;
 }
 
 class Groups extends Component {
@@ -52,6 +58,13 @@ class Groups extends Component {
      */
     config: Config = {
         navigationBarTitleText: 'Groups'
+    };
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            groups: []
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -66,6 +79,21 @@ class Groups extends Component {
     }
 
     componentDidHide() {
+    }
+
+    componentDidMount() {
+        Taro.request({
+            url: 'http://localhost:8000/api/groups',
+            data: {
+                uid: '5d2c286762d30c1cc08aaa44'
+            },
+            header: {
+                'content-type': 'application/json'
+            }
+        }).then(res => {
+            console.log(res.data);
+            this.setState({groups: res.data})
+        })
     }
 
     onClickEnter() {
@@ -84,20 +112,10 @@ class Groups extends Component {
                 {/*<View><Text>Hello, World</Text></View>*/}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={umjiImage}/>
-                        </View>
-                        <View className="flex-view-item">
-                            <Text>UM-SJTU Joint Institute</Text>
-                        </View>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover"
-                                    onClick={this.onClickEnter}>
-                                Enter
-                            </Button>
-                        </View>
-                    </View>
+                    {this.state.groups.map((value, key) =>
+                        <GroupItem key={key} gid={value._id.$oid} name={value.name} is_entered={false}
+                                   avatar={'http://localhost:8000/' + value.avatar}/>
+                    )}
                 </View>
             </View>
         )

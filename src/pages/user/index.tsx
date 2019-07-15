@@ -8,6 +8,10 @@ import {add, minus, asyncAdd} from '../../actions/counter'
 import './index.scss'
 
 
+import nacl from 'tweetnacl'
+import naclUtil from 'tweetnacl-util'
+
+
 // #region 书写注意
 //
 // 目前 typescript 版本还无法在装饰器模式下将 Props 注入到 Taro.Component 中的 props 属性
@@ -36,7 +40,7 @@ type PageState = {}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
-interface Index {
+interface User {
     props: IProps;
 }
 
@@ -53,7 +57,7 @@ interface Index {
         dispatch(asyncAdd())
     }
 }))
-class Index extends Component {
+class User extends Component {
 
     /**
      * 指定config的类型声明为: Taro.Config
@@ -76,7 +80,7 @@ class Index extends Component {
     componentDidShow() {
         // console.log(window);
         //
-        /*console.log(1111);
+        console.log(1111);
         const alice = nacl.box.keyPair()
         const bob = nacl.box.keyPair()
         const nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
@@ -90,13 +94,13 @@ class Index extends Component {
         if (payload) {
             const utf8 = naclUtil.encodeUTF8(payload)
             console.log(utf8)
-        }*/
+        }
     }
 
     componentDidHide() {
     }
 
-    componentDidMount() {
+    onClickGroups() {
         Taro.redirectTo({
             url: '/pages/groups/index'
         })
@@ -110,8 +114,8 @@ class Index extends Component {
                 {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
                 {/*<View><Text>{this.props.counter.num}</Text></View>*/}
 
-                {/*<Button className='dec_btn' onClick={this.onClickGroups}>Groups</Button>*/}
-                {/*<View><Text>Hello, World</Text></View>*/}
+                <Button className='dec_btn' onClick={this.onClickGroups}>Groups</Button>
+                <View><Text>Hello, World</Text></View>
             </View>
         )
     }
@@ -124,4 +128,4 @@ class Index extends Component {
 //
 // #endregion
 
-export default Index as ComponentClass<PageOwnProps, PageState>
+export default User as ComponentClass<PageOwnProps, PageState>

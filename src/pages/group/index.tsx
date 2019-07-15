@@ -7,12 +7,13 @@ import {View, Button, Text, Image} from '@tarojs/components'
 
 import '../groups/index.scss'
 
-import umjiImage from '../../static/images/umji.jpg'
+// import umjiImage from '../../static/images/umji.jpg'
 import cygImage from '../../static/images/cyg.jpg'
 import fxhImage from '../../static/images/fxh.jpg'
 import hycImage from '../../static/images/hyc.jpg'
 import jsfImage from '../../static/images/jsf.jpg'
 import lyhImage from '../../static/images/lyh.jpg'
+import GroupItem from "../../components/GroupItem";
 
 // #region 书写注意
 //
@@ -57,7 +58,7 @@ class Group extends Component {
      */
     config: Config = {
         navigationBarTitleText: 'Groups'
-    }
+    };
 
     componentWillReceiveProps(nextProps) {
         console.log(this.props, nextProps)
@@ -73,6 +74,10 @@ class Group extends Component {
     componentDidHide() {
     }
 
+    componentDidMount() {
+
+    }
+
     render() {
         return (
             <View className='container'>
@@ -83,19 +88,8 @@ class Group extends Component {
                 {/*<View><Text>Hello, World</Text></View>*/}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={umjiImage}/>
-                        </View>
-                        <View className="flex-view-item">
-                            <Text>UM-SJTU Joint Institute</Text>
-                        </View>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" disabled hover-class="other-button-hover">
-                                Joined
-                            </Button>
-                        </View>
-                    </View>
+                    <GroupItem gid={"222"} name={"111"} is_entered={true}
+                                   avatar={'http://localhost:8000/static/avatar/umji.jpg'}/>
                 </View>
 
                 <View className="section" style={{width: '85%'}}>
