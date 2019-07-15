@@ -72,14 +72,14 @@ class UserItem extends Component {
             url: 'http://localhost:8000/api/message',
             method: "POST",
             data: {
-                // outercypher: outercypher,
-                // noncestr: noncestr,
+                outercypher: outercypher,
+                noncestr: noncestr,
                 uid: uid,
                 gid: gid,
-                // ephermeralpubkey: ephermeralpubkey
+                ephermeralpubkey: ephermeralpubkey
             },
             header: {
-                'content-type': 'application/json'
+                'content-type': 'application/x-www-form-urlencoded'
             }
         }).then(res => {
             console.log(res.data);
