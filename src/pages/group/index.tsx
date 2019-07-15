@@ -1,6 +1,6 @@
 import {ComponentClass} from 'react'
 import Taro, {Component, Config} from '@tarojs/taro'
-import {View, Button, Text, Image} from '@tarojs/components'
+import {View} from '@tarojs/components'
 // import {connect} from '@tarojs/redux'
 //
 // import {add, minus, asyncAdd} from '../../actions/counter'
@@ -8,12 +8,14 @@ import {View, Button, Text, Image} from '@tarojs/components'
 import '../groups/index.scss'
 
 // import umjiImage from '../../static/images/umji.jpg'
-import cygImage from '../../static/images/cyg.jpg'
-import fxhImage from '../../static/images/fxh.jpg'
-import hycImage from '../../static/images/hyc.jpg'
-import jsfImage from '../../static/images/jsf.jpg'
-import lyhImage from '../../static/images/lyh.jpg'
-import GroupItem from "../../components/GroupItem";
+// import cygImage from '../../static/images/cyg.jpg'
+// import fxhImage from '../../static/images/fxh.jpg'
+// import hycImage from '../../static/images/hyc.jpg'
+// import jsfImage from '../../static/images/jsf.jpg'
+// import lyhImage from '../../static/images/lyh.jpg'
+//
+// import GroupItem from "../../components/GroupItem";
+import UserItem from "../../components/UserItem";
 
 // #region 书写注意
 //
@@ -39,12 +41,20 @@ type PageDispatchProps = {
 
 type PageOwnProps = {}
 
-type PageState = {}
+type PageState = {
+    users: Array<{
+        pubkey: string,
+        name: string,
+        avatar: string
+        _id: { $oid: string }
+    }>
+}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
 interface Group {
     props: IProps;
+    state: PageState;
 }
 
 class Group extends Component {
@@ -57,8 +67,15 @@ class Group extends Component {
      * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
      */
     config: Config = {
-        navigationBarTitleText: 'Groups'
+        navigationBarTitleText: 'Group View'
     };
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            users: []
+        }
+    }
 
     componentWillReceiveProps(nextProps) {
         console.log(this.props, nextProps)
@@ -75,100 +92,37 @@ class Group extends Component {
     }
 
     componentDidMount() {
-
+        Taro.request({
+            url: 'http://localhost:8000/api/group_users',
+            data: {
+                gid: this.$router.params.gid
+            },
+            header: {
+                'content-type': 'application/json'
+            }
+        }).then(res => {
+            console.log(res.data);
+            this.setState({users: res.data})
+        })
     }
 
     render() {
         return (
             <View className='container'>
-                {/*<Button className='add_btn' onClick={this.props.add}>+</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.dec}>-</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
-                {/*<View><Text>{this.props.counter.num}</Text></View>*/}
-                {/*<View><Text>Hello, World</Text></View>*/}
-                <View className="section" style={{width: '85%'}}>
-                    <View className="section__title">Groups:</View>
-                    <GroupItem gid={"222"} name={"111"} is_entered={true}
-                                   avatar={'http://localhost:8000/static/avatar/umji.jpg'}/>
-                </View>
+                {/*<View className="section" style={{width: '85%'}}>*/}
+                {/*    <View className="section__title">Groups:</View>*/}
+                {/*    <GroupItem gid={"222"} name={"111"} is_entered={true}*/}
+                {/*                   avatar={'http://localhost:8000/static/avatar/umji.jpg'}/>*/}
+                {/*</View>*/}
 
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">People:</View>
 
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={fxhImage}/>
-                        </View>
-                        <view className="flex-view-item">
-                            <Text>Xiaohan Fu\n</Text>
-                            <Text style="font-size: 12px;">2048R/92BDEA7E</Text>
-                        </view>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover">
-                                Love
-                            </Button>
-                        </View>
-                    </View>
-
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={lyhImage}/>
-                        </View>
-                        <view className="flex-view-item">
-                            <Text>Yihao Liu\n</Text>
-                            <Text style="font-size: 12px;">4096R/A7404127</Text>
-                        </view>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover">
-                                Love
-                            </Button>
-                        </View>
-                    </View>
-
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={hycImage}/>
-                        </View>
-                        <view className="flex-view-item">
-                            <Text>Yichen Hu\n</Text>
-                            <Text style="font-size: 12px;">2048R/25338646</Text>
-                        </view>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover">
-                                Love
-                            </Button>
-                        </View>
-                    </View>
-
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={jsfImage}/>
-                        </View>
-                        <view className="flex-view-item">
-                            <Text>Sifan Jiang\n</Text>
-                            <Text style="font-size: 12px;">3072R/CC7BBC04</Text>
-                        </view>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" hover-class="other-button-hover">
-                                Love
-                            </Button>
-                        </View>
-                    </View>
-
-                    <View className="flex-row" style="display: flex; align-items: center;">
-                        <View className="flex-view-item">
-                            <Image className="userinfo-avatar" src={cygImage}/>
-                        </View>
-                        <view className="flex-view-item">
-                            <Text>Yunguo Cai\n</Text>
-                            <Text style="font-size: 12px;">2048R/4DE527BE</Text>
-                        </view>
-                        <View className="flex-view-item" style="margin-left: auto;">
-                            <Button type="default" disabled hover-class="other-button-hover">
-                                Loved
-                            </Button>
-                        </View>
-                    </View>
+                    {this.state.users.map((value, key) =>
+                        <UserItem key={key} uid={value._id.$oid} name={value.name}
+                                  pubkey={value.pubkey}
+                                  avatar={'http://localhost:8000/' + value.avatar}/>
+                    )}
                 </View>
 
             </View>
