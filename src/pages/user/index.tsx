@@ -8,10 +8,6 @@ import {add, minus, asyncAdd} from '../../actions/counter'
 import './index.scss'
 
 
-import nacl from 'tweetnacl'
-import naclUtil from 'tweetnacl-util'
-
-
 // #region 书写注意
 //
 // 目前 typescript 版本还无法在装饰器模式下将 Props 注入到 Taro.Component 中的 props 属性
@@ -80,21 +76,21 @@ class User extends Component {
     componentDidShow() {
         // console.log(window);
         //
-        console.log(1111);
-        const alice = nacl.box.keyPair()
-        const bob = nacl.box.keyPair()
-        const nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
-        const plaintext = 'LYHSB'
-        const box = nacl.box(naclUtil.decodeUTF8(plaintext), nonce,
-            alice.publicKey, bob.secretKey)
-        const message = {box, nonce}
-        console.log(JSON.stringify(message))
-        const payload = nacl.box.open(message.box, message.nonce, bob.publicKey,
-            alice.secretKey)
-        if (payload) {
-            const utf8 = naclUtil.encodeUTF8(payload)
-            console.log(utf8)
-        }
+        // console.log(1111);
+        // const alice = nacl.box.keyPair()
+        // const bob = nacl.box.keyPair()
+        // const nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
+        // const plaintext = 'LYHSB'
+        // const box = nacl.box(naclUtil.decodeUTF8(plaintext), nonce,
+        //     alice.publicKey, bob.secretKey)
+        // const message = {box, nonce}
+        // console.log(JSON.stringify(message))
+        // const payload = nacl.box.open(message.box, message.nonce, bob.publicKey,
+        //     alice.secretKey)
+        // if (payload) {
+        //     const utf8 = naclUtil.encodeUTF8(payload)
+        //     console.log(utf8)
+        // }
     }
 
     componentDidHide() {
