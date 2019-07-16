@@ -8,7 +8,8 @@ import {View} from '@tarojs/components'
 import './index.scss'
 import GroupItem from '../../components/GroupItem'
 import {connect} from "@tarojs/redux";
-import {UserStateProps} from "../../reducers/user";
+import {UserStateProps, MatchStateProps} from "../../reducers/user";
+import UserItem from "../../components/UserItem";
 
 // #region 书写注意
 //
@@ -28,6 +29,12 @@ type PageOwnProps = {}
 
 type PageState = {
     groups: Array<{
+        name: string,
+        avatar: string
+        _id: { $oid: string }
+    }>;
+    matched: Array<{
+        pubkey: string,
         name: string,
         avatar: string
         _id: { $oid: string }
@@ -58,7 +65,8 @@ class Groups extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            groups: []
+            groups: [],
+            matched: []
         }
     }
 
@@ -76,39 +84,56 @@ class Groups extends Component {
     componentDidHide() {
     }
 
-    componentDidMount() {
-        Taro.request({
-            url: 'http://localhost:8000/api/groups',
-            data: {
-                uid: this.props.user.uid
-            },
-            header: {
-                'content-type': 'application/json'
+    async componentDidMount() {
+        try {
+            let matched: MatchStateProps = [];
+            for (let i in this.props.user.matched) {
+                const res = await Taro.request({
+                    url: 'http://localhost:8000/api/user',
+                    data: {
+                        uid: this.props.user.matched[i].uid
+                    },
+                    header: {
+                        'content-type': 'application/json'
+                    }
+                });
+                matched.push(res.data);
             }
-        }).then(res => {
-            console.log(res.data);
-            this.setState({groups: res.data})
-        })
-    }
+            const res = await Taro.request({
+                url: 'http://localhost:8000/api/groups',
+                data: {
+                    uid: this.props.user.uid
+                },
+                header: {
+                    'content-type': 'application/json'
+                }
+            });
+            this.setState({
+                groups: res.data,
+                matched: matched,
+            })
 
-    onClickEnter() {
-        Taro.redirectTo({
-            url: '/pages/group/index'
-        })
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     render() {
         return (
             <View className='container'>
-                {/*<Button className='add_btn' onClick={this.props.add}>+</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.dec}>-</Button>*/}
-                {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
-                {/*<View><Text>{this.props.counter.num}</Text></View>*/}
-                {/*<View><Text>Hello, World</Text></View>*/}
+                {this.state.matched.length ?
+                    <View className="section" style={{width: '85%'}}>
+                        <View className="section__title">Matched:</View>
+                        {this.state.matched.map((value) =>
+                            <UserItem uid={value._id.$oid} name={value.name}
+                                      pubkey={value.pubkey} showLoveBtn={false}
+                                      avatar={'http://localhost:8000/' + value.avatar}/>
+                        )}
+                    </View> : null}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
-                    {this.state.groups.map((value, key) =>
-                        <GroupItem key={key} gid={value._id.$oid} name={value.name} is_entered={false}
+                    {this.state.groups.map((value) =>
+                        <GroupItem gid={value._id.$oid} name={value.name} is_entered={false}
                                    avatar={'http://localhost:8000/' + value.avatar}/>
                     )}
                 </View>

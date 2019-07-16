@@ -43,6 +43,7 @@
     "nerv-devtools": "^1.4.0",
     "nervjs": "^1.4.0",
     "polyfill-crypto.getrandomvalues": "^1.0.0",
+    "react": "^16.8.6",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
