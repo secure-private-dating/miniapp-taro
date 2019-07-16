@@ -8,7 +8,7 @@ import {UserStateProps} from "../../reducers/user";
 import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
 import nacl from "tweetnacl";
 import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
-import {updateTarget} from "../../actions/user";
+import {addMatched, updateTarget} from "../../actions/user";
 
 
 // #region 书写注意
@@ -26,7 +26,8 @@ type PageStateProps = {
 }
 
 type PageDispatchProps = {
-    updateTarget: ({}) => void
+    updateTarget: ({}) => void,
+    addMatched: ({}) => void
 }
 
 type PageOwnProps = {}
@@ -42,6 +43,9 @@ interface Index {
 @connect(({user}) => ({user}), (dispatch) => ({
     updateTarget(target) {
         dispatch(updateTarget(target))
+    },
+    addMatched(matched) {
+        dispatch(addMatched(matched))
     }
 }))
 class Index extends Component {
@@ -148,7 +152,12 @@ class Index extends Component {
         const gid = this.props.user.gid;
 
         // target is lyh
-        const targetpubkey = decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY=')
+        const target = this.props.user.target;
+        if (target == null) {
+            console.log("not target, skip data");
+            return;
+        }
+        const targetpubkey = decodeBase64(target.publicKey);
         // target is cyg
         // const targetpubkey = decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=')
 
@@ -191,7 +200,7 @@ class Index extends Component {
                 } else {
                     const plaintext = decodeUTF8(plaintextarr)
                     console.log(plaintext)
-                    let ownname = '[ACKNOWL]' + 'lyh'
+                    let ownname = '[ACKNOWL]' + this.props.user.uid
                     let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
                     let noncestr = encodeBase64(noncearray)
                     const ephemeralkey = nacl.box.keyPair()
@@ -217,6 +226,7 @@ class Index extends Component {
             } else if (prefix === '[ACKNOWL]') {
                 console.log('receive ack')
                 console.log(contents)
+                this.props.addMatched({uid: contents})
                 // TODO: pop up dialogue on success
             }
         }
