@@ -1,5 +1,9 @@
 import {ADD_MATCHED, UPDATE_TARGET} from "../constants/user";
 
+export type MatchStateProps = Array<{
+    uid: string,
+}>
+
 export type UserStateProps = {
     uid: string,
     gid: string,
@@ -11,9 +15,7 @@ export type UserStateProps = {
         uid: string,
         publicKey: string
     },
-    matched: Array<{
-        uid: string,
-    }>
+    matched: MatchStateProps
 }
 
 const INITIAL_STATE: UserStateProps = {
