@@ -33,14 +33,14 @@ const INITIAL_STATE: UserStateProps = {
     //     publicKey: 'b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=',
     //     privateKey: 'bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y='
     // },
-    // hyc
+    // jsf
     uid: '5d2c2ab362d30c1cc08aaa47',
     keypair: {
         publicKey: '3nYmD5h1Mfewdc6KBRaeydFx5HK2qUfpI8eSxzpcgEE=',
         privateKey: 'ib52sSPl0dhtX8h0K1XRm3iZHgoi9mNG8vTrtjJQneI='
     },
-    // jsf
-    // uid: '5d2c2ab362d30c1cc08aaa47',
+    // hyc
+    // uid: '5d2c2b0a62d30c1cc08aaa48',
     // keypair: {
     //     publicKey: '/doOKD/6cwwA2RwdxgX2QPwMiHPdeBp1YSqckY9A9nc=',
     //     privateKey: '0TJwC9hV+r9865yzy/HxdZEZquJuvspMzgSCnMNi/9k='
