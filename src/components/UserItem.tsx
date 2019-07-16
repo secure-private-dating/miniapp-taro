@@ -5,7 +5,8 @@ import {connect} from '@tarojs/redux'
 
 import nacl from 'tweetnacl'
 import {encode as encodeBase64, decode as decodeBase64} from '@stablelib/base64'
-import {encode as encodeUTF8, decode as decodeUTF8} from '@stablelib/utf8'
+// import {encode as encodeUTF8, decode as decodeUTF8} from '@stablelib/utf8'
+import {encode as encodeUTF8} from '@stablelib/utf8'
 import {UserStateProps} from '../reducers/user'
 
 import '../app.scss'
@@ -53,41 +54,34 @@ class UserItem extends Component {
     }
 
     onClick() {
-        console.log(this.props.user);
-        console.log(this.props.pubkey);
-        const secretmsg = 'lyhsb'
+        const secretmsg = 'lyhsb';
         // load client's own keypair from local storage
         // using lyh's here
         const ownkey = {
-            publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='),
-            secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')
-        }
+            publicKey: decodeBase64(this.props.user.keypair.publicKey),
+            secretKey: decodeBase64(this.props.user.keypair.privateKey)
+        };
         // load target's public key through some API
-        const targetpubkey = decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=')
+        const targetpubkey = decodeBase64(this.props.pubkey);
         // symmetric encrypt with own secret key to form the inner cypher
-        let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
-        let noncestr = encodeBase64(noncearray)
+        let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength);
+        let noncestr = encodeBase64(noncearray);
         // innercypher is a string
-        const innercypher = '[CONFESS]' + encodeBase64(nacl.secretbox(encodeUTF8(secretmsg), noncearray, ownkey.secretKey))
+        const innercypher = '[CONFESS]' + encodeBase64(nacl.secretbox(encodeUTF8(secretmsg), noncearray, ownkey.secretKey));
         // asymmetric encrypt with target's public key to form whole(outter) cypher
-        const ephemeralkey = nacl.box.keyPair()
+        const ephemeralkey = nacl.box.keyPair();
         // outercypher is a string
-        let outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), noncearray, targetpubkey, ephemeralkey.secretKey))
+        let outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), noncearray, targetpubkey, ephemeralkey.secretKey));
         // uid = 1
-        const uid = '5d2c286762d30c1cc08aaa44'
-        const gid = '5d2c22c662d30c1cc08aaa3f'
-        const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey)
-        // const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
+        const uid = this.props.user.uid;
+        const gid = this.props.user.gid;
+        const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey);
+        const data = {outercypher, noncestr, uid, gid, ephermeralpubkey};
+        console.log(data);
         Taro.request({
             url: 'http://localhost:8000/api/message',
             method: "POST",
-            data: {
-                outercypher: outercypher,
-                noncestr: noncestr,
-                uid: uid,
-                gid: gid,
-                ephermeralpubkey: ephermeralpubkey
-            },
+            data: data,
             header: {
                 'content-type': 'application/x-www-form-urlencoded'
             }
