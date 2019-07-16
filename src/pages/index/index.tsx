@@ -3,9 +3,8 @@ import Taro, {Component, Config} from '@tarojs/taro'
 import {View} from '@tarojs/components'
 import {connect} from '@tarojs/redux'
 
-import {add, minus, asyncAdd} from '../../actions/counter'
-
 import './index.scss'
+import {UserStateProps} from "../../reducers/user";
 
 
 // #region 书写注意
@@ -19,40 +18,20 @@ import './index.scss'
 // #endregion
 
 type PageStateProps = {
-    counter: {
-        num: number
-    }
-}
-
-type PageDispatchProps = {
-    add: () => void
-    dec: () => void
-    asyncAdd: () => any
+    user: UserStateProps
 }
 
 type PageOwnProps = {}
 
 type PageState = {}
 
-type IProps = PageStateProps & PageDispatchProps & PageOwnProps
+type IProps = PageStateProps & PageOwnProps
 
 interface Index {
     props: IProps;
 }
 
-@connect(({counter}) => ({
-    counter
-}), (dispatch) => ({
-    add() {
-        dispatch(add())
-    },
-    dec() {
-        dispatch(minus())
-    },
-    asyncAdd() {
-        dispatch(asyncAdd())
-    }
-}))
+@connect(({user}) => ({user}))
 class Index extends Component {
 
     /**
@@ -97,6 +76,7 @@ class Index extends Component {
     }
 
     componentDidMount() {
+        console.log(this.props.user);
         Taro.redirectTo({
             url: '/pages/groups/index'
         })

@@ -16,6 +16,8 @@ import '../groups/index.scss'
 //
 // import GroupItem from "../../components/GroupItem";
 import UserItem from "../../components/UserItem";
+import {UserStateProps} from "../../reducers/user";
+import {connect} from "@tarojs/redux";
 
 // #region 书写注意
 //
@@ -28,15 +30,7 @@ import UserItem from "../../components/UserItem";
 // #endregion
 
 type PageStateProps = {
-    counter: {
-        num: number
-    }
-}
-
-type PageDispatchProps = {
-    add: () => void
-    dec: () => void
-    asyncAdd: () => any
+    user: UserStateProps
 }
 
 type PageOwnProps = {}
@@ -50,13 +44,14 @@ type PageState = {
     }>
 }
 
-type IProps = PageStateProps & PageDispatchProps & PageOwnProps
+type IProps = PageStateProps & PageOwnProps
 
 interface Group {
     props: IProps;
     state: PageState;
 }
 
+@connect(({user}) => ({user}))
 class Group extends Component {
 
     /**

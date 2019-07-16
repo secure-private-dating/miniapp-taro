@@ -1,12 +1,18 @@
 import {ComponentClass} from 'react'
 import Taro, {Component} from '@tarojs/taro'
 import {View, Button, Text, Image} from '@tarojs/components'
+import {connect} from '@tarojs/redux'
+
 import nacl from 'tweetnacl'
 import {encode as encodeBase64, decode as decodeBase64} from '@stablelib/base64'
 import {encode as encodeUTF8, decode as decodeUTF8} from '@stablelib/utf8'
-
+import {UserStateProps} from '../reducers/user'
 
 import '../app.scss'
+
+type PageStateProps = {
+    user: UserStateProps
+}
 
 type PageOwnProps = {
     uid: string,
@@ -18,10 +24,11 @@ type PageOwnProps = {
 type PageState = {}
 
 interface UserItem {
-    props: PageOwnProps;
+    props: PageOwnProps & PageStateProps;
     state: PageState;
 }
 
+@connect(({user}) => ({user}))
 class UserItem extends Component {
 
     constructor(props) {
@@ -46,12 +53,15 @@ class UserItem extends Component {
     }
 
     onClick() {
+        console.log(this.props.user);
         console.log(this.props.pubkey);
         const secretmsg = 'lyhsb'
         // load client's own keypair from local storage
         // using lyh's here
-        const ownkey = {publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='),
-            secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')}
+        const ownkey = {
+            publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='),
+            secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')
+        }
         // load target's public key through some API
         const targetpubkey = decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=')
         // symmetric encrypt with own secret key to form the inner cypher

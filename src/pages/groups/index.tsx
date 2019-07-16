@@ -7,6 +7,8 @@ import {View} from '@tarojs/components'
 
 import './index.scss'
 import GroupItem from '../../components/GroupItem'
+import {connect} from "@tarojs/redux";
+import {UserStateProps} from "../../reducers/user";
 
 // #region 书写注意
 //
@@ -19,15 +21,7 @@ import GroupItem from '../../components/GroupItem'
 // #endregion
 
 type PageStateProps = {
-    counter: {
-        num: number
-    }
-}
-
-type PageDispatchProps = {
-    add: () => void
-    dec: () => void
-    asyncAdd: () => any
+    user: UserStateProps
 }
 
 type PageOwnProps = {}
@@ -40,13 +34,14 @@ type PageState = {
     }>;
 }
 
-type IProps = PageStateProps & PageDispatchProps & PageOwnProps
+type IProps = PageStateProps & PageOwnProps
 
 interface Groups {
     props: IProps;
     state: PageState;
 }
 
+@connect(({user}) => ({user}))
 class Groups extends Component {
 
     /**
@@ -85,7 +80,7 @@ class Groups extends Component {
         Taro.request({
             url: 'http://localhost:8000/api/groups',
             data: {
-                uid: '5d2c286762d30c1cc08aaa44'
+                uid: this.props.user.uid
             },
             header: {
                 'content-type': 'application/json'
