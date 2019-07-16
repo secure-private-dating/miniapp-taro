@@ -10,9 +10,14 @@ import {encode as encodeUTF8} from '@stablelib/utf8'
 import {UserStateProps} from '../reducers/user'
 
 import '../app.scss'
+import {updateTarget} from "../actions/user";
 
 type PageStateProps = {
     user: UserStateProps
+}
+
+type PageDispatchProps = {
+    updateTarget: ({}) => void
 }
 
 type PageOwnProps = {
@@ -25,11 +30,15 @@ type PageOwnProps = {
 type PageState = {}
 
 interface UserItem {
-    props: PageOwnProps & PageStateProps;
+    props: PageOwnProps & PageDispatchProps & PageStateProps;
     state: PageState;
 }
 
-@connect(({user}) => ({user}))
+@connect(({user}) => ({user}), (dispatch) => ({
+    updateTarget(target) {
+        dispatch(updateTarget(target))
+    }
+}))
 class UserItem extends Component {
 
     constructor(props) {
@@ -37,7 +46,7 @@ class UserItem extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log(this.props, nextProps)
+        // console.log(this.props, nextProps)
     }
 
     componentWillUnmount() {
@@ -87,6 +96,16 @@ class UserItem extends Component {
             }
         }).then(res => {
             console.log(res.data);
+            const target = {
+                uid: this.props.uid,
+                publicKey: this.props.pubkey,
+            };
+            Taro.setStorage({key: 'target', data: target})
+                .then(res => {
+                    this.props.updateTarget(target);
+                    console.log(res);
+                    console.log(this.props.user);
+                })
             // this.setState({groups: res.data})
         })
         // const message = JSON.stringify(data)
@@ -105,9 +124,14 @@ class UserItem extends Component {
                     {/*<Text style="font-size: 12px;">{this.props.pubkey}</Text>*/}
                 </view>
                 <View className="flex-view-item" style="margin-left: auto;">
-                    <Button type="default" hover-class="other-button-hover" onClick={this.onClick}>
-                        Love
-                    </Button>
+                    {this.props.user.target && this.props.user.target.uid === this.props.uid ?
+                        <Button type="default" disabled hover-class="other-button-hover" onClick={this.onClick}>
+                            Loved
+                        </Button> :
+                        <Button type="default" hover-class="other-button-hover" onClick={this.onClick}>
+                            Love
+                        </Button>
+                    }
                 </View>
             </View>
         )

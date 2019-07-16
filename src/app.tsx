@@ -39,7 +39,7 @@ class App extends Component {
             navigationBarTitleText: 'WeChat',
             navigationBarTextStyle: 'black'
         }
-    }
+    };
 
     componentDidMount() {
         // Init tweetnacl in weapp with some tricks

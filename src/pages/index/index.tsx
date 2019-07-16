@@ -8,6 +8,7 @@ import {UserStateProps} from "../../reducers/user";
 import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
 import nacl from "tweetnacl";
 import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
+import {updateTarget} from "../../actions/user";
 
 
 // #region 书写注意
@@ -24,17 +25,25 @@ type PageStateProps = {
     user: UserStateProps
 }
 
+type PageDispatchProps = {
+    updateTarget: ({}) => void
+}
+
 type PageOwnProps = {}
 
 type PageState = {}
 
-type IProps = PageStateProps & PageOwnProps
+type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
 interface Index {
     props: IProps;
 }
 
-@connect(({user}) => ({user}))
+@connect(({user}) => ({user}), (dispatch) => ({
+    updateTarget(target) {
+        dispatch(updateTarget(target))
+    }
+}))
 class Index extends Component {
 
     /**
@@ -78,8 +87,9 @@ class Index extends Component {
     componentDidHide() {
     }
 
-    componentDidMount() {
-        Taro.request({
+    async componentDidMount() {
+        await this.loadCache();
+        const res = await Taro.request({
             url: 'http://localhost:8000/api/message',
             method: "GET",
             data: {
@@ -90,15 +100,15 @@ class Index extends Component {
             header: {
                 'content-type': 'application/json'
             }
-        }).then(res => {
-            console.log('pull message:')
-            // console.log(res.data)
-            for (let d in res.data) {
-                console.log(res.data[d])
-                this.proceedData(res.data[d])
-            }
-            // this.setState({groups: res.data})
-        })
+        });
+
+        console.log('pull message:');
+        // console.log(res.data)
+        for (let d in res.data) {
+            console.log(res.data[d]);
+            this.proceedData(res.data[d])
+        }
+        // this.setState({groups: res.data})
 
         console.log(this.props.user);
         Taro.redirectTo({
@@ -209,6 +219,15 @@ class Index extends Component {
                 console.log(contents)
                 // TODO: pop up dialogue on success
             }
+        }
+    }
+
+    async loadCache() {
+        try {
+            const target = (await Taro.getStorage({key: 'target'})).data;
+            this.props.updateTarget(target);
+        } catch (e) {
+            console.log(e);
         }
     }
 }
