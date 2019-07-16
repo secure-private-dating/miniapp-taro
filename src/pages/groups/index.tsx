@@ -126,7 +126,7 @@ class Groups extends Component {
                         <View className="section__title">Matched:</View>
                         {this.state.matched.map((value) =>
                             <UserItem uid={value._id.$oid} name={value.name}
-                                      pubkey={value.pubkey}
+                                      pubkey={value.pubkey} showLoveBtn={false}
                                       avatar={'http://localhost:8000/' + value.avatar}/>
                         )}
                     </View> : null}

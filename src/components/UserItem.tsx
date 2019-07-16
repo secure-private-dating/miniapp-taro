@@ -17,14 +17,15 @@ type PageStateProps = {
 }
 
 type PageDispatchProps = {
-    updateTarget: ({}) => void
+    updateTarget: ({}) => void;
 }
 
 type PageOwnProps = {
-    uid: string,
-    name: string,
-    avatar: string,
-    pubkey: string,
+    uid: string;
+    name: string;
+    avatar: string;
+    pubkey: string;
+    showLoveBtn?: boolean;
 }
 
 type PageState = {}
@@ -40,6 +41,10 @@ interface UserItem {
     }
 }))
 class UserItem extends Component {
+
+    static defaultProps = {
+        showLoveBtn: true
+    };
 
     constructor(props) {
         super(props);
@@ -124,14 +129,15 @@ class UserItem extends Component {
                     {/*<Text style="font-size: 12px;">{this.props.pubkey}</Text>*/}
                 </view>
                 <View className="flex-view-item" style="margin-left: auto;">
-                    {this.props.user.target && this.props.user.target.uid === this.props.uid ?
-                        <Button type="default" disabled hover-class="other-button-hover" onClick={this.onClick}>
-                            Loved
-                        </Button> :
-                        <Button type="default" hover-class="other-button-hover" onClick={this.onClick}>
-                            Love
-                        </Button>
-                    }
+                    {this.props.showLoveBtn ? (
+                        this.props.user.target && this.props.user.target.uid === this.props.uid ?
+                            <Button type="default" disabled hover-class="other-button-hover" onClick={this.onClick}>
+                                Loved
+                            </Button> :
+                            <Button type="default" hover-class="other-button-hover" onClick={this.onClick}>
+                                Love
+                            </Button>
+                    ) : null}
                 </View>
             </View>
         )
