@@ -9,6 +9,7 @@ import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64"
 import nacl from "tweetnacl";
 import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
 import {addMatched, updateTarget} from "../../actions/user";
+import {ConfigStateProps} from "../../reducers/config";
 
 
 // #region 书写注意
@@ -22,7 +23,8 @@ import {addMatched, updateTarget} from "../../actions/user";
 // #endregion
 
 type PageStateProps = {
-    user: UserStateProps
+    user: UserStateProps;
+    config: ConfigStateProps;
 }
 
 type PageDispatchProps = {
@@ -40,7 +42,7 @@ interface Index {
     props: IProps;
 }
 
-@connect(({user}) => ({user}), (dispatch) => ({
+@connect(({user, config}) => ({user, config}), (dispatch) => ({
     updateTarget(target) {
         dispatch(updateTarget(target))
     },
@@ -94,7 +96,7 @@ class Index extends Component {
     async componentDidMount() {
         await this.loadCache();
         const res = await Taro.request({
-            url: 'http://localhost:8000/api/message',
+            url: this.props.config.baseUrl + 'api/message',
             method: "GET",
             data: {
                 uid: "5d2c241762d30c1cc08aaa42",
@@ -182,7 +184,7 @@ class Index extends Component {
                 const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
                 // send response message
                 Taro.request({
-                    url: 'http://localhost:8000/api/message',
+                    url: this.props.config.baseUrl + 'api/message',
                     method: "POST",
                     data: data,
                     header: {
@@ -211,7 +213,7 @@ class Index extends Component {
                     // send ack message
                     console.log(data)
                     Taro.request({
-                        url: 'http://localhost:8000/api/message',
+                        url: this.props.config.baseUrl + 'api/message',
                         method: "POST",
                         data: data,
                         header: {

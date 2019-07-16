@@ -11,9 +11,13 @@ import {UserStateProps} from '../reducers/user'
 
 import '../app.scss'
 import {updateTarget} from "../actions/user";
+import {ConfigStateProps} from "../reducers/config";
+
+import {MaterialIcons} from 'taro-icons';
 
 type PageStateProps = {
-    user: UserStateProps
+    user: UserStateProps;
+    config: ConfigStateProps;
 }
 
 type PageDispatchProps = {
@@ -35,7 +39,7 @@ interface UserItem {
     state: PageState;
 }
 
-@connect(({user}) => ({user}), (dispatch) => ({
+@connect(({user, config}) => ({user, config}), (dispatch) => ({
     updateTarget(target) {
         dispatch(updateTarget(target))
     }
@@ -93,7 +97,7 @@ class UserItem extends Component {
         const data = {outercypher, noncestr, uid, gid, ephermeralpubkey};
         console.log(data);
         Taro.request({
-            url: 'http://localhost:8000/api/message',
+            url: this.props.config.baseUrl + 'api/message',
             method: "POST",
             data: data,
             header: {
@@ -129,13 +133,19 @@ class UserItem extends Component {
                     {/*<Text style="font-size: 12px;">{this.props.pubkey}</Text>*/}
                 </view>
                 <View className="flex-view-item" style="margin-left: auto;">
-                    {this.props.showLoveBtn ? (
+                    {this.props.showLoveBtn && this.props.user.uid !== this.props.uid ? (
                         this.props.user.target && this.props.user.target.uid === this.props.uid ?
-                            <Button type="default" disabled hover-class="other-button-hover" onClick={this.onClick}>
-                                Loved
+                            <Button className="free-btn-bordernone" type="default" disabled
+                                    hover-class="other-button-hover" onClick={this.onClick}>
+                                <View style="padding-top: 17px;">
+                                    <MaterialIcons name='favorite' size={32} color='#ea4aaa'/>
+                                </View>
                             </Button> :
-                            <Button type="default" hover-class="other-button-hover" onClick={this.onClick}>
-                                Love
+                            <Button className="free-btn-bordernone" type="default"
+                                    hover-class="other-button-hover" onClick={this.onClick}>
+                                <View style="padding-top: 17px;">
+                                    <MaterialIcons name='favorite-border' size={32} color='#ea4aaa'/>
+                                </View>
                             </Button>
                     ) : null}
                 </View>

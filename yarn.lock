@@ -8798,6 +8798,12 @@ taro-css-to-react-native@1.3.9:
     css-mediaquery "^0.1.2"
     postcss-value-parser "^3.3.0"
 
+taro-icons@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npm.taobao.org/taro-icons/download/taro-icons-0.3.0.tgz#1acfa5fd45587bb15507ed39aaf27f67966461ad"
+  dependencies:
+    prop-types "^15.6.2"
+
 term-size@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npm.taobao.org/term-size/download/term-size-1.2.0.tgz#458b83887f288fc56d6fffbfad262e26638efa69"

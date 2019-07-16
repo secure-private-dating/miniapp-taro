@@ -8,6 +8,7 @@ import Index from './pages/groups'
 import configStore from './store'
 
 import './app.scss'
+import 'taro-icons/scss/MaterialIcons.scss';
 
 // 如果需要在 h5 环境中开启 React Devtools
 // 取消以下注释：

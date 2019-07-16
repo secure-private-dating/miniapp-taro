@@ -10,6 +10,7 @@ import GroupItem from '../../components/GroupItem'
 import {connect} from "@tarojs/redux";
 import {UserStateProps, MatchStateProps} from "../../reducers/user";
 import UserItem from "../../components/UserItem";
+import {ConfigStateProps} from "../../reducers/config";
 
 // #region 书写注意
 //
@@ -22,7 +23,8 @@ import UserItem from "../../components/UserItem";
 // #endregion
 
 type PageStateProps = {
-    user: UserStateProps
+    user: UserStateProps;
+    config: ConfigStateProps;
 }
 
 type PageOwnProps = {}
@@ -39,6 +41,12 @@ type PageState = {
         avatar: string
         _id: { $oid: string }
     }>;
+    self: null | {
+        pubkey: string,
+        name: string,
+        avatar: string
+        _id: { $oid: string }
+    };
 }
 
 type IProps = PageStateProps & PageOwnProps
@@ -48,7 +56,7 @@ interface Groups {
     state: PageState;
 }
 
-@connect(({user}) => ({user}))
+@connect(({user, config}) => ({user, config}))
 class Groups extends Component {
 
     /**
@@ -66,7 +74,8 @@ class Groups extends Component {
         super(props);
         this.state = {
             groups: [],
-            matched: []
+            matched: [],
+            self: null,
         }
     }
 
@@ -89,7 +98,7 @@ class Groups extends Component {
             let matched: MatchStateProps = [];
             for (let i in this.props.user.matched) {
                 const res = await Taro.request({
-                    url: 'http://localhost:8000/api/user',
+                    url: this.props.config.baseUrl + 'api/user',
                     data: {
                         uid: this.props.user.matched[i].uid
                     },
@@ -99,8 +108,17 @@ class Groups extends Component {
                 });
                 matched.push(res.data);
             }
+            const res1 = await Taro.request({
+                url: this.props.config.baseUrl + 'api/user',
+                data: {
+                    uid: this.props.user.uid
+                },
+                header: {
+                    'content-type': 'application/json'
+                }
+            });
             const res = await Taro.request({
-                url: 'http://localhost:8000/api/groups',
+                url: this.props.config.baseUrl + 'api/groups',
                 data: {
                     uid: this.props.user.uid
                 },
@@ -110,6 +128,7 @@ class Groups extends Component {
             });
             this.setState({
                 groups: res.data,
+                self: res1.data,
                 matched: matched,
             })
 
@@ -121,20 +140,27 @@ class Groups extends Component {
     render() {
         return (
             <View className='container'>
+                {this.state.self ?
+                    <View className="section" style={{width: '85%'}}>
+                        <View className="section__title">Welcome:</View>
+                        <UserItem uid={this.state.self._id.$oid} name={this.state.self.name}
+                                  pubkey={this.state.self.pubkey} showLoveBtn={false}
+                                  avatar={this.props.config.baseUrl + '/' + this.state.self.avatar}/>
+                    </View> : null}
                 {this.state.matched.length ?
                     <View className="section" style={{width: '85%'}}>
                         <View className="section__title">Matched:</View>
                         {this.state.matched.map((value) =>
                             <UserItem uid={value._id.$oid} name={value.name}
                                       pubkey={value.pubkey} showLoveBtn={false}
-                                      avatar={'http://localhost:8000/' + value.avatar}/>
+                                      avatar={this.props.config.baseUrl + '/' + value.avatar}/>
                         )}
                     </View> : null}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
                     {this.state.groups.map((value) =>
                         <GroupItem gid={value._id.$oid} name={value.name} is_entered={false}
-                                   avatar={'http://localhost:8000/' + value.avatar}/>
+                                   avatar={this.props.config.baseUrl + '/' + value.avatar}/>
                     )}
                 </View>
             </View>
