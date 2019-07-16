@@ -47,6 +47,12 @@ class GroupItem extends Component {
         })
     }
 
+    onClickBack() {
+        Taro.redirectTo({
+            url: '/pages/groups/index'
+        })
+    }
+
     render() {
         return (
             <View className="flex-row" style="display: flex; align-items: center;">
@@ -58,9 +64,9 @@ class GroupItem extends Component {
                 </View>
                 <View className="flex-view-item" style="margin-left: auto;">
                     {this.props.is_entered ?
-                        <Button type="default" hover-class="other-button-hover" disabled
-                                                     onClick={this.onClickEnter}>
-                            Joined
+                        <Button type="default" hover-class="other-button-hover"
+                                                     onClick={this.onClickBack}>
+                            Back
                         </Button> :
                         <Button type="default" hover-class="other-button-hover"
                                 onClick={this.onClickEnter}>
