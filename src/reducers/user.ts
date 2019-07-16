@@ -1,8 +1,10 @@
 import {ADD_MATCHED, UPDATE_TARGET} from "../constants/user";
 
-export type MatchStateProps = Array<{
-    uid: string,
-}>
+export type MatchStateProps = {
+    [propName: string]: {
+        uid: string,
+    }
+}
 
 export type UserStateProps = {
     uid: string,
@@ -46,7 +48,7 @@ const INITIAL_STATE: UserStateProps = {
     //     privateKey: '0TJwC9hV+r9865yzy/HxdZEZquJuvspMzgSCnMNi/9k='
     // },
     target: null,
-    matched: [],
+    matched: {},
 };
 
 export default function user(state = INITIAL_STATE, action) {
@@ -57,7 +59,7 @@ export default function user(state = INITIAL_STATE, action) {
                 target: action.target
             };
         case ADD_MATCHED:
-            state.matched.push(action.matched);
+            state.matched[action.matched.uid] = action.matched;
             return state;
         default:
             return state;
