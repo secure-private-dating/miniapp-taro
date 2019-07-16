@@ -16,8 +16,10 @@ import '../groups/index.scss'
 //
 // import GroupItem from "../../components/GroupItem";
 import UserItem from "../../components/UserItem";
+import GroupItem from "../../components/GroupItem";
 import {UserStateProps} from "../../reducers/user";
 import {connect} from "@tarojs/redux";
+import {ConfigStateProps} from "../../reducers/config";
 
 // #region 书写注意
 //
@@ -30,7 +32,8 @@ import {connect} from "@tarojs/redux";
 // #endregion
 
 type PageStateProps = {
-    user: UserStateProps
+    user: UserStateProps;
+    config: ConfigStateProps;
 }
 
 type PageOwnProps = {}
@@ -41,7 +44,12 @@ type PageState = {
         name: string,
         avatar: string
         _id: { $oid: string }
-    }>
+    }>;
+    self: null | {
+        name: string,
+        avatar: string
+        _id: { $oid: string }
+    }
 }
 
 type IProps = PageStateProps & PageOwnProps
@@ -51,7 +59,7 @@ interface Group {
     state: PageState;
 }
 
-@connect(({user}) => ({user}))
+@connect(({user, config}) => ({user, config}))
 class Group extends Component {
 
     /**
@@ -68,7 +76,8 @@ class Group extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            users: []
+            users: [],
+            self: null,
         }
     }
 
@@ -86,37 +95,63 @@ class Group extends Component {
     componentDidHide() {
     }
 
-    componentDidMount() {
-        Taro.request({
-            url: 'http://localhost:8000/api/group_users',
-            data: {
-                gid: this.$router.params.gid
-            },
-            header: {
-                'content-type': 'application/json'
-            }
-        }).then(res => {
-            console.log(res.data);
-            this.setState({users: res.data})
-        })
+    async componentDidMount() {
+        try {
+            const users = await Taro.request({
+                url: this.props.config.baseUrl + 'api/group_users',
+                data: {
+                    gid: this.$router.params.gid
+                },
+                header: {
+                    'content-type': 'application/json'
+                }
+            });
+            console.log(users.data);
+            const group = await Taro.request({
+                url: this.props.config.baseUrl + 'api/group',
+                data: {
+                    gid: this.$router.params.gid
+                },
+                header: {
+                    'content-type': 'application/json'
+                }
+            });
+            console.log(group.data);
+            this.setState({
+                users: users.data,
+                self: group.data,
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     render() {
         return (
             <View className='container'>
+                {this.state.self ?
+                    <View className="section" style={{width: '85%'}}>
+                        <View className="section__title">Group:</View>
+                        <GroupItem gid={this.state.self._id.$oid} name={this.state.self.name} is_entered={true}
+                                   avatar={this.props.config.baseUrl + this.state.self.avatar}/>
+                    </View> : null}
                 {/*<View className="section" style={{width: '85%'}}>*/}
-                {/*    <View className="section__title">Groups:</View>*/}
-                {/*    <GroupItem gid={"222"} name={"111"} is_entered={true}*/}
-                {/*                   avatar={'http://localhost:8000/static/avatar/umji.jpg'}/>*/}
+                {/*    <View className="section__title">Welcome:</View>*/}
+                {/*    {this.state.users.map((value, key) =>*/}
+                {/*        value._id.$oid === this.props.user.uid ?*/}
+                {/*            <UserItem key={key} uid={value._id.$oid} name={value.name}*/}
+                {/*                      pubkey={value.pubkey}*/}
+                {/*                      avatar={this.props.config.baseUrl + value.avatar}/> : null*/}
+                {/*    )}*/}
                 {/*</View>*/}
 
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">People:</View>
-
                     {this.state.users.map((value, key) =>
-                        <UserItem key={key} uid={value._id.$oid} name={value.name}
-                                  pubkey={value.pubkey}
-                                  avatar={'http://localhost:8000/' + value.avatar}/>
+                        value._id.$oid !== this.props.user.uid ?
+                            <UserItem key={key} uid={value._id.$oid} name={value.name}
+                                      pubkey={value.pubkey}
+                                      avatar={this.props.config.baseUrl + value.avatar}/> : null
                     )}
                 </View>
 
