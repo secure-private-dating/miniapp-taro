@@ -19,17 +19,17 @@ export type UserStateProps = {
 const INITIAL_STATE: UserStateProps = {
     gid: '5d2c22c662d30c1cc08aaa3f',
     // lyh
-    // uid: '5d2c286762d30c1cc08aaa44',
-    // keypair: {
-    //     publicKey: 'ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY=',
-    //     privateKey: '60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE='
-    // },
-    // cyg
-    uid: '5d2c2a5162d30c1cc08aaa46',
+    uid: '5d2c286762d30c1cc08aaa44',
     keypair: {
-        publicKey: 'b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=',
-        privateKey: 'bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y='
+        publicKey: 'ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY=',
+        privateKey: '60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE='
     },
+    // cyg
+    // uid: '5d2c2a5162d30c1cc08aaa46',
+    // keypair: {
+    //     publicKey: 'b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=',
+    //     privateKey: 'bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y='
+    // },
     target: null,
     matched: [],
 };

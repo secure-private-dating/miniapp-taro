@@ -97,8 +97,8 @@ class Index extends Component {
             url: 'http://localhost:8000/api/message',
             method: "GET",
             data: {
-                uid: "5d2c241762d30c1cc08aaa42",
-                gid: "5d2c22c662d30c1cc08aaa3f",
+                uid: this.props.user.uid,
+                gid: this.props.user.gid,
                 // from_id: ephermeralpubkey
             },
             header: {
