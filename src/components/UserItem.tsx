@@ -54,6 +54,7 @@ class UserItem extends Component {
     }
 
     onClick() {
+        // send confess message
         const secretmsg = 'lyhsb';
         // load client's own keypair from local storage
         // using lyh's here
@@ -72,7 +73,6 @@ class UserItem extends Component {
         const ephemeralkey = nacl.box.keyPair();
         // outercypher is a string
         let outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), noncearray, targetpubkey, ephemeralkey.secretKey));
-        // uid = 1
         const uid = this.props.user.uid;
         const gid = this.props.user.gid;
         const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey);

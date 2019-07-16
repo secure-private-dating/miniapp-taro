@@ -59,6 +59,7 @@ class App extends Component {
             for (i = 0; i < n; i++) x[i] = v[i];
             for (i = 0; i < v.length; i++) v[i] = 0;
         });
+
     }
 
     componentDidShow() {
@@ -79,6 +80,7 @@ class App extends Component {
             </Provider>
         )
     }
+
 }
 
 Taro.render(<App/>, document.getElementById('app'))
