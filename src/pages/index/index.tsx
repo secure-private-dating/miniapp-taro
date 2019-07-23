@@ -8,7 +8,7 @@ import {UserStateProps} from "../../reducers/user";
 import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
 import nacl from "tweetnacl";
 import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
-import {addMatched, updateTarget} from "../../actions/user";
+import {addMatched, updateTarget, update} from "../../actions/user";
 import {ConfigStateProps} from "../../reducers/config";
 
 
@@ -29,6 +29,7 @@ type PageStateProps = {
 
 type PageDispatchProps = {
     updateTarget: ({}) => void,
+    update: ({}, {}) => void,
     addMatched: ({}) => void
 }
 
@@ -45,6 +46,9 @@ interface Index {
 @connect(({user, config}) => ({user, config}), (dispatch) => ({
     updateTarget(target) {
         dispatch(updateTarget(target))
+    },
+    update(key, value) {
+        dispatch(update(key, value))
     },
     addMatched(matched) {
         dispatch(addMatched(matched))
@@ -94,7 +98,43 @@ class Index extends Component {
     }
 
     async componentDidMount() {
+        try {
+            const code = await Taro.login();
+            console.log(code);
+            const login_result = await Taro.request({
+                url: this.props.config.baseUrl + 'user/login',
+                method: "GET",
+                data: {
+                    code: code.code,
+                },
+                header: {
+                    'content-type': 'application/json'
+                }
+            });
+            console.log(login_result.data);
+            const sid = login_result.data.sid;
+            const uid = login_result.data.uid.$oid;
+            await Taro.setStorage({key: 'sid', data: sid});
+            this.props.update('uid', uid);
+            console.log(this.props.user);
+
+            const settings = await Taro.getSetting();
+            console.log(settings);
+            if (settings.authSetting['scope.userInfo']) {
+                console.log('scope.userInfo found');
+            } else {
+                console.log('scope.userInfo not found');
+                const res = await Taro.openSetting();
+                console.log(res);
+            }
+
+
+        } catch (e) {
+            console.log(e);
+        }
+
         await this.loadCache();
+
         const res = await Taro.request({
             url: this.props.config.baseUrl + 'api/message',
             method: "GET",
@@ -104,7 +144,8 @@ class Index extends Component {
                 // from_id: ephermeralpubkey
             },
             header: {
-                'content-type': 'application/json'
+                'content-type': 'application/json',
+                'cookie': 'session=' + this.props.user.sid,
             }
         });
 
@@ -238,6 +279,8 @@ class Index extends Component {
         try {
             const target = (await Taro.getStorage({key: 'target'})).data;
             this.props.updateTarget(target);
+            const sid = (await Taro.getStorage({key: 'sid'})).data;
+            this.props.update('sid', sid);
         } catch (e) {
             console.log(e);
         }
