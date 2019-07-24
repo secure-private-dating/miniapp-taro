@@ -74,11 +74,11 @@ class UserItem extends Component {
     onClick() {
         // send confess message
         const secretmsg = 'lyhsb';
-        // load client's own keypair from local storage
+        // load client's own keyPair from local storage
         // using lyh's here
         const ownkey = {
-            publicKey: decodeBase64(this.props.user.keypair.publicKey),
-            secretKey: decodeBase64(this.props.user.keypair.privateKey)
+            publicKey: decodeBase64(this.props.user.keyPair.publicKey),
+            secretKey: decodeBase64(this.props.user.keyPair.secretKey)
         };
         // load target's public key through some API
         const targetpubkey = decodeBase64(this.props.pubkey);
@@ -101,8 +101,9 @@ class UserItem extends Component {
             method: "POST",
             data: data,
             header: {
-                'content-type': 'application/x-www-form-urlencoded'
-            }
+                'content-type': 'application/x-www-form-urlencoded',
+                 'cookie': 'session=' + this.props.user.sid,
+           }
         }).then(res => {
             console.log(res.data);
             const target = {

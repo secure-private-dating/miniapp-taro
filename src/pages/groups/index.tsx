@@ -103,7 +103,8 @@ class Groups extends Component {
                         uid: this.props.user.matched[i].uid
                     },
                     header: {
-                        'content-type': 'application/json'
+                        'content-type': 'application/json',
+                        'cookie': 'session=' + this.props.user.sid,
                     }
                 });
                 matched.push(res.data);
@@ -114,7 +115,8 @@ class Groups extends Component {
                     uid: this.props.user.uid
                 },
                 header: {
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
                 }
             });
             const res = await Taro.request({
@@ -123,7 +125,8 @@ class Groups extends Component {
                     uid: this.props.user.uid
                 },
                 header: {
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
                 }
             });
             this.setState({

@@ -11,11 +11,10 @@ export const updateTarget = (target) => {
     }
 };
 
-export const update = (key, value) => {
+export const update = (dict) => {
     return {
         type: UPDATE,
-        key: key,
-        value: value
+        dict: dict,
     }
 };
 

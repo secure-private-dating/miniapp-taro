@@ -103,7 +103,8 @@ class Group extends Component {
                     gid: this.$router.params.gid
                 },
                 header: {
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
                 }
             });
             console.log(users.data);
@@ -113,7 +114,8 @@ class Group extends Component {
                     gid: this.$router.params.gid
                 },
                 header: {
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
                 }
             });
             console.log(group.data);

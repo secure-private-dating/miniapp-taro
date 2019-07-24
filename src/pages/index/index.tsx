@@ -29,7 +29,7 @@ type PageStateProps = {
 
 type PageDispatchProps = {
     updateTarget: ({}) => void,
-    update: ({}, {}) => void,
+    update: ({}) => void,
     addMatched: ({}) => void
 }
 
@@ -51,8 +51,8 @@ interface Index {
     updateTarget(target) {
         dispatch(updateTarget(target))
     },
-    update(key, value) {
-        dispatch(update(key, value))
+    update(dict) {
+        dispatch(update(dict))
     },
     addMatched(matched) {
         dispatch(addMatched(matched))
@@ -141,24 +141,43 @@ class Index extends Component {
     }
 
     async loadData() {
-        await this.loadCache();
+
         console.log(this.props.user);
 
         const res = await Taro.request({
-            url: this.props.config.baseUrl + 'api/message',
-            method: "GET",
+            url: this.props.config.baseUrl + 'api/pull_message',
+            method: "POST",
             data: {
-                uid: this.props.user.uid,
-                gid: this.props.user.gid,
-                // from_id: ephermeralpubkey
+                'latest_message_id': this.props.user.latestMessageId
             },
             header: {
-                'content-type': 'application/json',
+                'content-type': 'application/x-www-form-urlencoded',
                 'cookie': 'session=' + this.props.user.sid,
             }
         });
-
         console.log('pull message:');
+        console.log(res.data);
+        let latestMessageId = {};
+        for (let gid in res.data) {
+            if (!res.data.hasOwnProperty(gid)) continue;
+            console.log('process gid:', gid);
+            const dataSize = res.data[gid].length;
+            if (dataSize) {
+                latestMessageId[gid] = res.data[gid][dataSize - 1]._id.$oid;
+                for (let i = 0; i < dataSize; i++) {
+                    console.log(res.data[gid][i]);
+                    this.proceedData(res.data[gid][i]);
+                }
+            }
+        }
+        await Taro.setStorage({key: 'latestMessageId', data: JSON.stringify(latestMessageId)});
+        this.props.update({latestMessageId});
+
+        Taro.redirectTo({
+            url: '/pages/groups/index'
+        })
+
+        /*console.log('pull message:');
         // console.log(res.data)
         for (let d in res.data) {
             console.log(res.data[d]);
@@ -169,7 +188,41 @@ class Index extends Component {
         console.log(this.props.user);
         Taro.redirectTo({
             url: '/pages/groups/index'
-        })
+        })*/
+    }
+
+    async validateKey() {
+        const keyPair = this.props.user.keyPair;
+        console.log(keyPair);
+        if (!keyPair.publicKey || !keyPair.secretKey) {
+            const newKeyPair = nacl.box.keyPair();
+            const publicKey = encodeBase64(newKeyPair.publicKey);
+            const secretKey = encodeBase64(newKeyPair.secretKey);
+            const res = await Taro.request({
+                url: this.props.config.baseUrl + 'user/update_public_key',
+                method: "GET",
+                data: {
+                    key: publicKey
+                },
+                header: {
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
+                }
+            });
+            console.log('update public key: ', res.data);
+            await Taro.setStorage({key: 'publicKey', data: publicKey});
+            await Taro.setStorage({key: 'secretKey', data: secretKey});
+            this.props.update({
+                keyPair: {
+                    publicKey: publicKey,
+                    secretKey: secretKey,
+                }
+            })
+        } else {
+            /** @TODO validate existing pubkey */
+
+        }
+
     }
 
     async login(userInfo) {
@@ -189,13 +242,23 @@ class Index extends Component {
                 }
             });
             console.log(login_result.data);
+
             const sid = login_result.data.sid;
             const uid = login_result.data.uid.$oid;
+            const publicKey = login_result.data.publicKey;
+            const avatar = login_result.data.avatar;
+
             await Taro.setStorage({key: 'sid', data: sid});
             await Taro.setStorage({key: 'uid', data: uid});
+            await Taro.setStorage({key: 'publicKey', data: publicKey});
+            await Taro.setStorage({key: 'avatar', data: avatar});
+
+            await this.loadCache();
             console.log(this.props.user);
 
+            await this.validateKey();
             await this.loadData();
+
         } catch (e) {
             console.log(e);
         }
@@ -228,7 +291,7 @@ class Index extends Component {
 
     proceedData(d) {
         /* temporary hard code */
-        // load client's own keypair from local storage
+        // load client's own keyPair from local storage
         // lyh's key
         // const ownkey = {publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='), secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')}
         // cyg's key
@@ -236,8 +299,8 @@ class Index extends Component {
         //     publicKey: decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM='), secretKey: decodeBase64('bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y=')
         // }
         const ownkey = {
-            publicKey: decodeBase64(this.props.user.keypair.publicKey),
-            secretKey: decodeBase64(this.props.user.keypair.privateKey)
+            publicKey: decodeBase64(this.props.user.keyPair.publicKey),
+            secretKey: decodeBase64(this.props.user.keyPair.secretKey)
         };
 
         const uid = this.props.user.uid;
@@ -278,7 +341,8 @@ class Index extends Component {
                     method: "POST",
                     data: data,
                     header: {
-                        'content-type': 'application/x-www-form-urlencoded'
+                        'content-type': 'application/x-www-form-urlencoded',
+                        'cookie': 'session=' + this.props.user.sid,
                     }
                 }).then(res => {
                     console.log(res.data);
@@ -307,7 +371,8 @@ class Index extends Component {
                         method: "POST",
                         data: data,
                         header: {
-                            'content-type': 'application/x-www-form-urlencoded'
+                            'content-type': 'application/x-www-form-urlencoded',
+                            'cookie': 'session=' + this.props.user.sid,
                         }
                     }).then(res => {
                         console.log(res.data);
@@ -327,9 +392,30 @@ class Index extends Component {
     async loadCache() {
         try {
             const sid = (await Taro.getStorage({key: 'sid'})).data;
-            this.props.update('sid', sid);
             const uid = (await Taro.getStorage({key: 'uid'})).data;
-            this.props.update('uid', uid);
+            const publicKey = (await Taro.getStorage({key: 'publicKey'})).data;
+            const avatar = (await Taro.getStorage({key: 'avatar'})).data;
+            this.props.update({
+                sid, uid, avatar,
+                keyPair: {publicKey}
+            })
+        } catch (e) {
+            console.log(e);
+        }
+        try {
+            const secretKey = (await Taro.getStorage({key: 'secretKey'})).data;
+            this.props.update({
+                keyPair: {secretKey}
+            });
+        } catch (e) {
+            console.log('secretKey not found!');
+            this.props.update({
+                keyPair: {secretKey: ''}
+            });
+        }
+        try {
+            const latestMessageId = (await Taro.getStorage({key: 'latestMessageId'})).data;
+            this.props.update({latestMessageId});
         } catch (e) {
             console.log(e);
         }
