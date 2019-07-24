@@ -133,7 +133,7 @@ class Group extends Component {
                     <View className="section" style={{width: '85%'}}>
                         <View className="section__title">Group:</View>
                         <GroupItem gid={this.state.self._id.$oid} name={this.state.self.name} is_entered={true}
-                                   avatar={this.props.config.baseUrl + this.state.self.avatar}/>
+                                   avatar={this.state.self.avatar}/>
                     </View> : null}
                 {/*<View className="section" style={{width: '85%'}}>*/}
                 {/*    <View className="section__title">Welcome:</View>*/}
@@ -151,7 +151,7 @@ class Group extends Component {
                         value._id.$oid !== this.props.user.uid ?
                             <UserItem key={key} uid={value._id.$oid} name={value.name}
                                       pubkey={value.pubkey}
-                                      avatar={this.props.config.baseUrl + value.avatar}/> : null
+                                      avatar={value.avatar}/> : null
                     )}
                 </View>
 

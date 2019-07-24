@@ -145,7 +145,7 @@ class Groups extends Component {
                         <View className="section__title">Welcome:</View>
                         <UserItem uid={this.state.self._id.$oid} name={this.state.self.name}
                                   pubkey={this.state.self.pubkey} showLoveBtn={false}
-                                  avatar={this.props.config.baseUrl + '/' + this.state.self.avatar}/>
+                                  avatar={this.state.self.avatar}/>
                     </View> : null}
                 {this.state.matched.length ?
                     <View className="section" style={{width: '85%'}}>
@@ -153,14 +153,14 @@ class Groups extends Component {
                         {this.state.matched.map((value) =>
                             <UserItem uid={value._id.$oid} name={value.name}
                                       pubkey={value.pubkey} showLoveBtn={false}
-                                      avatar={this.props.config.baseUrl + '/' + value.avatar}/>
+                                      avatar={value.avatar}/>
                         )}
                     </View> : null}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
                     {this.state.groups.map((value) =>
                         <GroupItem gid={value._id.$oid} name={value.name} is_entered={false}
-                                   avatar={this.props.config.baseUrl + '/' + value.avatar}/>
+                                   avatar={value.avatar}/>
                     )}
                 </View>
             </View>

@@ -1,6 +1,6 @@
 import {ComponentClass} from 'react'
 import Taro, {Component, Config} from '@tarojs/taro'
-import {View} from '@tarojs/components'
+import {Button, View} from '@tarojs/components'
 import {connect} from '@tarojs/redux'
 
 import './index.scss'
@@ -35,12 +35,16 @@ type PageDispatchProps = {
 
 type PageOwnProps = {}
 
-type PageState = {}
+type PageState = {
+    isAuthenticated: boolean;
+    code: string;
+}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
 interface Index {
     props: IProps;
+    state: PageState;
 }
 
 @connect(({user, config}) => ({user, config}), (dispatch) => ({
@@ -65,6 +69,14 @@ class Index extends Component {
      */
     config: Config = {
         navigationBarTitleText: '首页'
+    };
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            isAuthenticated: true,
+            code: '',
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -97,43 +109,40 @@ class Index extends Component {
     componentDidHide() {
     }
 
-    async componentDidMount() {
+    async componentWillMount() {
         try {
             const code = await Taro.login();
             console.log(code);
-            const login_result = await Taro.request({
-                url: this.props.config.baseUrl + 'user/login',
-                method: "GET",
-                data: {
-                    code: code.code,
-                },
-                header: {
-                    'content-type': 'application/json'
-                }
-            });
-            console.log(login_result.data);
-            const sid = login_result.data.sid;
-            const uid = login_result.data.uid.$oid;
-            await Taro.setStorage({key: 'sid', data: sid});
-            this.props.update('uid', uid);
-            console.log(this.props.user);
+            this.setState({code: code.code});
 
+            // try to get scope.userInfo'
             const settings = await Taro.getSetting();
             console.log(settings);
             if (settings.authSetting['scope.userInfo']) {
                 console.log('scope.userInfo found');
+                const userInfo = await Taro.getUserInfo();
+                console.log(userInfo);
+                await this.login(userInfo.userInfo)
             } else {
                 console.log('scope.userInfo not found');
-                const res = await Taro.openSetting();
-                console.log(res);
+                this.setState({isAuthenticated: false});
+                return;
             }
-
-
         } catch (e) {
             console.log(e);
         }
+    }
 
+    async componentDidMount() {
+        if (!this.state.isAuthenticated) {
+            return;
+        }
+        // await this.loadData();
+    }
+
+    async loadData() {
         await this.loadCache();
+        console.log(this.props.user);
 
         const res = await Taro.request({
             url: this.props.config.baseUrl + 'api/message',
@@ -163,9 +172,49 @@ class Index extends Component {
         })
     }
 
+    async login(userInfo) {
+        if (!this.state.code) return;
+        try {
+            const login_result = await Taro.request({
+                url: this.props.config.baseUrl + 'user/login',
+                method: "POST",
+                data: {
+                    code: this.state.code,
+                    avatar: userInfo.avatarUrl,
+                    name: userInfo.nickName,
+                    gender: userInfo.gender,
+                },
+                header: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                }
+            });
+            console.log(login_result.data);
+            const sid = login_result.data.sid;
+            const uid = login_result.data.uid.$oid;
+            await Taro.setStorage({key: 'sid', data: sid});
+            await Taro.setStorage({key: 'uid', data: uid});
+            console.log(this.props.user);
+
+            await this.loadData();
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async getUserInfo(userInfo) {
+        console.log(userInfo);
+        if (userInfo.detail.userInfo) {
+            this.setState({isAuthenticated: true});
+            await this.login(userInfo.detail.userInfo);
+        }
+    }
+
     render() {
         return (
             <View className='index'>
+                {!this.state.isAuthenticated ?
+                    <Button openType='getUserInfo' onGetUserInfo={this.getUserInfo}>Authenticate</Button>
+                    : null}
                 {/*<Button className='add_btn' onClick={this.props.add}>+</Button>*/}
                 {/*<Button className='dec_btn' onClick={this.props.dec}>-</Button>*/}
                 {/*<Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>*/}
@@ -277,10 +326,16 @@ class Index extends Component {
 
     async loadCache() {
         try {
-            const target = (await Taro.getStorage({key: 'target'})).data;
-            this.props.updateTarget(target);
             const sid = (await Taro.getStorage({key: 'sid'})).data;
             this.props.update('sid', sid);
+            const uid = (await Taro.getStorage({key: 'uid'})).data;
+            this.props.update('uid', uid);
+        } catch (e) {
+            console.log(e);
+        }
+        try {
+            const target = (await Taro.getStorage({key: 'target'})).data;
+            this.props.updateTarget(target);
         } catch (e) {
             console.log(e);
         }
