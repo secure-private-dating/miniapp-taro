@@ -26,6 +26,7 @@ type PageDispatchProps = {
 
 type PageOwnProps = {
     uid: string;
+    gid: string;
     name: string;
     avatar: string;
     publicKey: string;
@@ -81,7 +82,7 @@ class UserItem extends Component {
             secretKey: decodeBase64(this.props.user.keyPair.secretKey)
         };
         // load target's public key through some API
-        console.log(this.props);
+        console.log(`confess love to ${this.props.name}: ${this.props.publicKey}`);
         const targetpubkey = decodeBase64(this.props.publicKey);
         // symmetric encrypt with own secret key to form the inner cypher
         let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength);
@@ -93,7 +94,7 @@ class UserItem extends Component {
         // outercypher is a string
         let outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), noncearray, targetpubkey, ephemeralkey.secretKey));
         const uid = this.props.user.uid;
-        const gid = this.props.user.gid;
+        const gid = this.props.gid;
         const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey);
         const data = {outercypher, noncestr, uid, gid, ephermeralpubkey};
         console.log(data);
@@ -137,7 +138,7 @@ class UserItem extends Component {
                 <View className="flex-view-item" style="margin-left: auto;">
                     {this.props.showLoveBtn && this.props.user.uid !== this.props.uid ? (
                         this.props.user.target && this.props.user.target.uid === this.props.uid ?
-                            <Button className="free-btn-bordernone" type="default" disabled
+                            <Button className="free-btn-bordernone" type="default"
                                     hover-class="other-button-hover" onClick={this.onClick}>
                                 <View style="padding-top: 17px;">
                                     <MaterialIcons name='favorite' size={32} color='#ea4aaa'/>

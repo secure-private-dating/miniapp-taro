@@ -166,7 +166,7 @@ class Index extends Component {
                 latestMessageId[gid] = res.data[gid][dataSize - 1]._id.$oid;
                 for (let i = 0; i < dataSize; i++) {
                     console.log(res.data[gid][i]);
-                    this.proceedData(res.data[gid][i]);
+                    this.proceedData(res.data[gid][i], gid);
                 }
             }
         }
@@ -305,7 +305,7 @@ class Index extends Component {
         )
     }
 
-    proceedData(d) {
+    proceedData(d, gid) {
         /* temporary hard code */
         // load client's own keyPair from local storage
         // lyh's key
@@ -318,9 +318,8 @@ class Index extends Component {
             publicKey: decodeBase64(this.props.user.keyPair.publicKey),
             secretKey: decodeBase64(this.props.user.keyPair.secretKey)
         };
-
+        console.log('receive data, use ownkey:', ownkey);
         const uid = this.props.user.uid;
-        const gid = this.props.user.gid;
 
         // target is lyh
         const target = this.props.user.target;
@@ -372,6 +371,9 @@ class Index extends Component {
                 } else {
                     const plaintext = decodeUTF8(plaintextarr)
                     console.log(plaintext)
+                    if (this.props.user.target) {
+                        this.props.addMatched({uid: this.props.user.target.uid});
+                    }
                     let ownname = '[ACKNOWL]' + this.props.user.uid
                     let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
                     let noncestr = encodeBase64(noncearray)

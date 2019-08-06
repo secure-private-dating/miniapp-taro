@@ -166,13 +166,12 @@ class Group extends Component {
                 {/*                      avatar={this.props.config.baseUrl + value.avatar}/> : null*/}
                 {/*    )}*/}
                 {/*</View>*/}
-
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">People:</View>
                     {this.state.users.map((value, key) =>
-                        value._id.$oid !== this.props.user.uid ?
+                        value._id.$oid !== this.props.user.uid && this.state.self  ?
                             <UserItem key={key} uid={value._id.$oid} name={value.name}
-                                      publicKey={value.publicKey}
+                                      publicKey={value.publicKey} gid={this.state.self._id.$oid}
                                       avatar={value.avatar}/> : null
                     )}
                 </View>

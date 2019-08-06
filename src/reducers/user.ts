@@ -9,7 +9,7 @@ export type MatchStateProps = {
 
 export type UserStateProps = {
     uid: string,
-    gid: string,
+    // gid: string,
     keyPair: {
         publicKey: string,
         secretKey: string
@@ -25,7 +25,7 @@ export type UserStateProps = {
 
 const INITIAL_STATE: UserStateProps = {
     // gid for ve450
-    gid: '5d2c22c662d30c1cc08aaa3f',
+    // gid: '5d2c22c662d30c1cc08aaa3f',
     uid: '',
     keyPair: {
         publicKey: '',
