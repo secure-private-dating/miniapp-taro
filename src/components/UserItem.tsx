@@ -28,7 +28,7 @@ type PageOwnProps = {
     uid: string;
     name: string;
     avatar: string;
-    pubkey: string;
+    publicKey: string;
     showLoveBtn?: boolean;
 }
 
@@ -81,7 +81,8 @@ class UserItem extends Component {
             secretKey: decodeBase64(this.props.user.keyPair.secretKey)
         };
         // load target's public key through some API
-        const targetpubkey = decodeBase64(this.props.pubkey);
+        console.log(this.props);
+        const targetpubkey = decodeBase64(this.props.publicKey);
         // symmetric encrypt with own secret key to form the inner cypher
         let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength);
         let noncestr = encodeBase64(noncearray);
@@ -102,13 +103,13 @@ class UserItem extends Component {
             data: data,
             header: {
                 'content-type': 'application/x-www-form-urlencoded',
-                 'cookie': 'session=' + this.props.user.sid,
-           }
+                'cookie': 'session=' + this.props.user.sid,
+            }
         }).then(res => {
             console.log(res.data);
             const target = {
                 uid: this.props.uid,
-                publicKey: this.props.pubkey,
+                publicKey: this.props.publicKey,
             };
             Taro.setStorage({key: 'target', data: target})
                 .then(res => {

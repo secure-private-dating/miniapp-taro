@@ -40,14 +40,14 @@ type PageOwnProps = {}
 
 type PageState = {
     users: Array<{
-        pubkey: string,
+        publicKey: string,
         name: string,
         avatar: string
         _id: { $oid: string }
     }>;
     self: null | {
         name: string,
-        avatar: string
+        avatar: { $oid: string }
         _id: { $oid: string }
     }
 }
@@ -128,6 +128,26 @@ class Group extends Component {
         }
     }
 
+    onShareAppMessage(res) {
+        console.log(res);
+        if (res.from === 'button') {
+            // 来自页面内转发按钮
+            console.log(res.target)
+        }
+        let data = {
+            title: `Welcome to join Cryptographic Dating`,
+            path: `/pages/index/index`
+        };
+        if (this.state.self) {
+            data = {
+                title: `Welcome to join Cryptographic Dating, I'm in Group ${this.state.self.name}`,
+                path: `/pages/index/index?type=join_group&gid=${this.state.self._id.$oid}`
+            }
+        }
+        console.log(data);
+        return data;
+    }
+
     render() {
         return (
             <View className='container'>
@@ -135,7 +155,7 @@ class Group extends Component {
                     <View className="section" style={{width: '85%'}}>
                         <View className="section__title">Group:</View>
                         <GroupItem gid={this.state.self._id.$oid} name={this.state.self.name} is_entered={true}
-                                   avatar={this.state.self.avatar}/>
+                                   avatar={this.state.self.avatar.$oid}/>
                     </View> : null}
                 {/*<View className="section" style={{width: '85%'}}>*/}
                 {/*    <View className="section__title">Welcome:</View>*/}
@@ -152,7 +172,7 @@ class Group extends Component {
                     {this.state.users.map((value, key) =>
                         value._id.$oid !== this.props.user.uid ?
                             <UserItem key={key} uid={value._id.$oid} name={value.name}
-                                      pubkey={value.pubkey}
+                                      publicKey={value.publicKey}
                                       avatar={value.avatar}/> : null
                     )}
                 </View>

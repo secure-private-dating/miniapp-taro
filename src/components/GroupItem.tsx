@@ -3,6 +3,14 @@ import Taro, {Component} from '@tarojs/taro'
 import {View, Button, Text, Image} from '@tarojs/components'
 
 import '../app.scss'
+import {connect} from "@tarojs/redux";
+import {UserStateProps} from "../reducers/user";
+import {ConfigStateProps} from "../reducers/config";
+
+type PageStateProps = {
+    user: UserStateProps;
+    config: ConfigStateProps;
+}
 
 type PageOwnProps = {
     is_entered: boolean,
@@ -14,10 +22,11 @@ type PageOwnProps = {
 type PageState = {}
 
 interface GroupItem {
-    props: PageOwnProps;
+    props: PageStateProps & PageOwnProps;
     state: PageState;
 }
 
+@connect(({user, config}) => ({user, config}))
 class GroupItem extends Component {
 
     constructor(props) {
@@ -57,17 +66,23 @@ class GroupItem extends Component {
         return (
             <View className="flex-row" style="display: flex; align-items: center;">
                 <View className="flex-view-item">
-                    <Image className="userinfo-avatar" src={this.props.avatar}/>
+                    <Image className="userinfo-avatar"
+                           src={this.props.config.baseUrl + 'group/avatar/' + this.props.avatar}/>
                 </View>
                 <View className="flex-view-item">
                     <Text>{this.props.name}</Text>
                 </View>
                 <View className="flex-view-item" style="margin-left: auto;">
                     {this.props.is_entered ?
-                        <Button type="default" hover-class="other-button-hover"
-                                                     onClick={this.onClickBack}>
-                            Back
-                        </Button> :
+                        <View>
+                            <Button type="default" hover-class="other-button-hover" openType='share'>
+                                Invite
+                            </Button>
+                            <Button type="default" hover-class="other-button-hover"
+                                    onClick={this.onClickBack}>
+                                Back
+                            </Button>
+                        </View> :
                         <Button type="default" hover-class="other-button-hover"
                                 onClick={this.onClickEnter}>
                             Enter

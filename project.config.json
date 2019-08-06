@@ -4,7 +4,7 @@
 	"description": "miniapp",
 	"appid": "wx387d93f434e6b3f4",
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": false,
 		"postcss": false,
 		"minified": false,
@@ -23,5 +23,34 @@
 	"compileType": "miniprogram",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
-	"condition": {}
+	"libVersion": "2.7.7",
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
+		"miniprogram": {
+			"current": 0,
+			"list": [
+				{
+					"id": 0,
+					"name": "join group",
+					"pathName": "pages/index/index",
+					"query": "type=join_group&gid=5d49720ee3f6f135eef77a37",
+					"scene": null
+				}
+			]
+		}
+	}
 }

@@ -3,7 +3,6 @@ import Taro, {Component} from '@tarojs/taro'
 import {View, Button, Text, Image} from '@tarojs/components'
 
 import '../app.scss'
-import {MaterialIcons} from 'taro-icons';
 import addIcon from '../static/images/add-icon.png';
 
 type PageOwnProps = {
@@ -12,12 +11,12 @@ type PageOwnProps = {
 
 type PageState = {}
 
-interface GroupCreate {
+interface GroupCreateItem {
     props: PageOwnProps;
     state: PageState;
 }
 
-class GroupCreate extends Component {
+class GroupCreateItem extends Component {
 
     constructor(props) {
         super(props);
@@ -40,9 +39,9 @@ class GroupCreate extends Component {
     componentDidMount() {
     }
 
-    onClickBack() {
+    onClickCreate() {
         Taro.redirectTo({
-            url: '/pages/groups/index'
+            url: '/pages/groups/create'
         })
     }
 
@@ -50,10 +49,7 @@ class GroupCreate extends Component {
         return (
             <View className="flex-row" style="display: flex; align-items: center;">
                 <View className="flex-view-item">
-                    {/*<View className="userinfo-avatar">*/}
-                    {/*    <MaterialIcons className="userinfo-avatar" name='add-circle-outline' size='64px' color='#ea4aaa'/>*/}
-                    {/*</View>*/}
-                    <Image className="userinfo-avatar" src={addIcon}/>
+                    <Image className="userinfo-avatar" src={addIcon} onClick={this.onClickCreate}/>
                 </View>
                 <View className="flex-view-item">
                     <Text>Create a New Group</Text>
@@ -66,4 +62,4 @@ class GroupCreate extends Component {
     }
 }
 
-export default GroupCreate as ComponentClass<PageOwnProps, PageState>
+export default GroupCreateItem as ComponentClass<PageOwnProps, PageState>

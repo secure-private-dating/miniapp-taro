@@ -68,7 +68,7 @@ class Index extends Component {
      * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
      */
     config: Config = {
-        navigationBarTitleText: '首页'
+        navigationBarTitleText: 'Main Page'
     };
 
     constructor(props) {
@@ -172,6 +172,22 @@ class Index extends Component {
         }
         await Taro.setStorage({key: 'latestMessageId', data: JSON.stringify(latestMessageId)});
         this.props.update({latestMessageId});
+
+        if (this.$router.params.type == 'join_group') {
+            const gid = this.$router.params.gid;
+            console.log('join group', gid);
+            const res = await Taro.request({
+                url: this.props.config.baseUrl + 'group/join',
+                data: {
+                    gid: gid
+                },
+                header: {
+                    'content-type': 'application/json',
+                    'cookie': 'session=' + this.props.user.sid,
+                }
+            });
+            console.log(res);
+        }
 
         Taro.redirectTo({
             url: '/pages/groups/index'

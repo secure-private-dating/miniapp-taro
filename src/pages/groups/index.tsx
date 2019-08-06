@@ -8,10 +8,10 @@ import {View} from '@tarojs/components'
 import './index.scss'
 import GroupItem from '../../components/GroupItem'
 import {connect} from "@tarojs/redux";
-import {UserStateProps, MatchStateProps} from "../../reducers/user";
+import {UserStateProps} from "../../reducers/user";
 import UserItem from "../../components/UserItem";
 import {ConfigStateProps} from "../../reducers/config";
-import GroupCreate from "../../components/GroupCreate";
+import GroupCreateItem from "../../components/GroupCreateItem";
 
 // #region 书写注意
 //
@@ -33,19 +33,19 @@ type PageOwnProps = {}
 type PageState = {
     groups: Array<{
         name: string,
-        avatar: string
+        avatar: { $oid: string }
         _id: { $oid: string }
     }>;
     matched: Array<{
-        pubkey: string,
+        publicKey: string,
         name: string,
         avatar: string
         _id: { $oid: string }
     }>;
     self: null | {
-        pubkey: string,
+        publicKey: string,
         name: string,
-        avatar: string
+        avatar: string,
         _id: { $oid: string }
     };
 }
@@ -148,7 +148,7 @@ class Groups extends Component {
                     <View className="section" style={{width: '85%'}}>
                         <View className="section__title">Welcome:</View>
                         <UserItem uid={this.state.self._id.$oid} name={this.state.self.name}
-                                  pubkey={this.state.self.pubkey} showLoveBtn={false}
+                                  publicKey={this.state.self.publicKey} showLoveBtn={false}
                                   avatar={this.state.self.avatar}/>
                     </View> : null}
                 {this.state.matched.length ?
@@ -156,16 +156,16 @@ class Groups extends Component {
                         <View className="section__title">Matched:</View>
                         {this.state.matched.map((value) =>
                             <UserItem uid={value._id.$oid} name={value.name}
-                                      pubkey={value.pubkey} showLoveBtn={false}
+                                      publicKey={value.publicKey} showLoveBtn={false}
                                       avatar={value.avatar}/>
                         )}
                     </View> : null}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
-                    <GroupCreate/>
+                    <GroupCreateItem/>
                     {this.state.groups.map((value) =>
                         <GroupItem gid={value._id.$oid} name={value.name} is_entered={false}
-                                   avatar={value.avatar}/>
+                                   avatar={value.avatar.$oid}/>
                     )}
                 </View>
             </View>

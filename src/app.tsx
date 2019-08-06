@@ -32,6 +32,7 @@ class App extends Component {
             'pages/index/index',
             'pages/user/index',
             'pages/groups/index',
+            'pages/groups/create',
             'pages/group/index',
         ],
         window: {
