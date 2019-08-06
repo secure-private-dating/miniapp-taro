@@ -5,9 +5,10 @@ import {connect} from '@tarojs/redux'
 
 import './index.scss'
 import {UserStateProps} from "../../reducers/user";
-import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
+// import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
+import {encode as encodeBase64} from "@stablelib/base64";
 import nacl from "tweetnacl";
-import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
+// import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
 import {addMatched, updateTarget, update} from "../../actions/user";
 import {ConfigStateProps} from "../../reducers/config";
 
@@ -140,39 +141,7 @@ class Index extends Component {
         // await this.loadData();
     }
 
-    async loadData() {
-
-        console.log(this.props.user);
-
-        const res = await Taro.request({
-            url: this.props.config.baseUrl + 'api/pull_message',
-            method: "POST",
-            data: {
-                'latest_message_id': this.props.user.latestMessageId
-            },
-            header: {
-                'content-type': 'application/x-www-form-urlencoded',
-                'cookie': 'session=' + this.props.user.sid,
-            }
-        });
-        console.log('pull message:');
-        console.log(res.data);
-        let latestMessageId = {};
-        for (let gid in res.data) {
-            if (!res.data.hasOwnProperty(gid)) continue;
-            console.log('process gid:', gid);
-            const dataSize = res.data[gid].length;
-            if (dataSize) {
-                latestMessageId[gid] = res.data[gid][dataSize - 1]._id.$oid;
-                for (let i = 0; i < dataSize; i++) {
-                    console.log(res.data[gid][i]);
-                    this.proceedData(res.data[gid][i], gid);
-                }
-            }
-        }
-        await Taro.setStorage({key: 'latestMessageId', data: JSON.stringify(latestMessageId)});
-        this.props.update({latestMessageId});
-
+    async redirect() {
         if (this.$router.params.type == 'join_group') {
             const gid = this.$router.params.gid;
             console.log('join group', gid);
@@ -188,28 +157,16 @@ class Index extends Component {
             });
             console.log(res);
         }
-
+        console.log('redirect to groups/index');
         Taro.redirectTo({
             url: '/pages/groups/index'
         })
-
-        /*console.log('pull message:');
-        // console.log(res.data)
-        for (let d in res.data) {
-            console.log(res.data[d]);
-            this.proceedData(res.data[d])
-        }
-        // this.setState({groups: res.data})
-
-        console.log(this.props.user);
-        Taro.redirectTo({
-            url: '/pages/groups/index'
-        })*/
     }
+
 
     async validateKey() {
         const keyPair = this.props.user.keyPair;
-        console.log(keyPair);
+        console.log('validate key:', keyPair);
         if (!keyPair.publicKey || !keyPair.secretKey) {
             const newKeyPair = nacl.box.keyPair();
             const publicKey = encodeBase64(newKeyPair.publicKey);
@@ -244,6 +201,7 @@ class Index extends Component {
     async login(userInfo) {
         if (!this.state.code) return;
         try {
+            console.log('start login');
             const login_result = await Taro.request({
                 url: this.props.config.baseUrl + 'user/login',
                 method: "POST",
@@ -257,7 +215,7 @@ class Index extends Component {
                     'content-type': 'application/x-www-form-urlencoded'
                 }
             });
-            console.log(login_result.data);
+            console.log('login result:', login_result.data);
 
             const sid = login_result.data.sid;
             const uid = login_result.data.uid.$oid;
@@ -270,10 +228,10 @@ class Index extends Component {
             await Taro.setStorage({key: 'avatar', data: avatar});
 
             await this.loadCache();
-            console.log(this.props.user);
+            console.log('props.user:', this.props.user);
 
             await this.validateKey();
-            await this.loadData();
+            await this.redirect();
 
         } catch (e) {
             console.log(e);
@@ -303,108 +261,6 @@ class Index extends Component {
                 {/*<View><Text>Hello, World</Text></View>*/}
             </View>
         )
-    }
-
-    proceedData(d, gid) {
-        /* temporary hard code */
-        // load client's own keyPair from local storage
-        // lyh's key
-        // const ownkey = {publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='), secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')}
-        // cyg's key
-        // const ownkey = {
-        //     publicKey: decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM='), secretKey: decodeBase64('bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y=')
-        // }
-        const ownkey = {
-            publicKey: decodeBase64(this.props.user.keyPair.publicKey),
-            secretKey: decodeBase64(this.props.user.keyPair.secretKey)
-        };
-        console.log('receive data, use ownkey:', ownkey);
-        const uid = this.props.user.uid;
-
-        // target is lyh
-        const target = this.props.user.target;
-        if (target == null) {
-            console.log("not target, skip data");
-            return;
-        }
-        const targetpubkey = decodeBase64(target.publicKey);
-        // target is cyg
-        // const targetpubkey = decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=')
-
-        const payload = nacl.box.open(decodeBase64(d.outercypher), decodeBase64(d.noncestr), decodeBase64(d.ephermeralpubkey), ownkey.secretKey)
-        if (payload == null) {
-            console.log('auth failed')
-        } else {
-            // your message
-            const utf8 = decodeUTF8(payload)
-            let prefix = utf8.substring(0, 9)
-            let contents = utf8.substring(9)
-            if (prefix === '[CONFESS]') {
-                console.log('receive confess')
-                const innercypher = '[RESPONS]' + contents
-                const ephemeralkey = nacl.box.keyPair()
-                // let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
-                // let noncestr = encodeBase64(noncearray)
-                // load targetpubkey
-                const outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), decodeBase64(d.noncestr), targetpubkey, ephemeralkey.secretKey))
-                const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey)
-                let noncestr = d.noncestr
-                const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
-                // send response message
-                Taro.request({
-                    url: this.props.config.baseUrl + 'api/message',
-                    method: "POST",
-                    data: data,
-                    header: {
-                        'content-type': 'application/x-www-form-urlencoded',
-                        'cookie': 'session=' + this.props.user.sid,
-                    }
-                }).then(res => {
-                    console.log(res.data);
-                    // this.setState({groups: res.data})
-                })
-            } else if (prefix === '[RESPONS]') {
-                console.log('receive response')
-                const plaintextarr = nacl.secretbox.open(decodeBase64(contents), decodeBase64(d.noncestr), ownkey.secretKey)
-                if (plaintextarr == null) {
-                    console.log('response auth failed')
-                } else {
-                    const plaintext = decodeUTF8(plaintextarr)
-                    console.log(plaintext)
-                    if (this.props.user.target) {
-                        this.props.addMatched({uid: this.props.user.target.uid});
-                    }
-                    let ownname = '[ACKNOWL]' + this.props.user.uid
-                    let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
-                    let noncestr = encodeBase64(noncearray)
-                    const ephemeralkey = nacl.box.keyPair()
-                    const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey)
-                    let boxarray = nacl.box(encodeUTF8(ownname), noncearray, targetpubkey, ephemeralkey.secretKey)
-                    let outercypher = encodeBase64(boxarray)
-                    const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
-                    // send ack message
-                    console.log(data)
-                    Taro.request({
-                        url: this.props.config.baseUrl + 'api/message',
-                        method: "POST",
-                        data: data,
-                        header: {
-                            'content-type': 'application/x-www-form-urlencoded',
-                            'cookie': 'session=' + this.props.user.sid,
-                        }
-                    }).then(res => {
-                        console.log(res.data);
-                        // this.setState({groups: res.data})
-                    })
-
-                }
-            } else if (prefix === '[ACKNOWL]') {
-                console.log('receive ack')
-                console.log(contents)
-                this.props.addMatched({uid: contents})
-                // TODO: pop up dialogue on success
-            }
-        }
     }
 
     async loadCache() {

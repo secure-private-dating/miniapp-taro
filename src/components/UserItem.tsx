@@ -26,7 +26,7 @@ type PageDispatchProps = {
 
 type PageOwnProps = {
     uid: string;
-    gid: string;
+    gid?: string;
     name: string;
     avatar: string;
     publicKey: string;
@@ -40,6 +40,7 @@ interface UserItem {
     state: PageState;
 }
 
+// @ts-ignore
 @connect(({user, config}) => ({user, config}), (dispatch) => ({
     updateTarget(target) {
         dispatch(updateTarget(target))
@@ -48,16 +49,17 @@ interface UserItem {
 class UserItem extends Component {
 
     static defaultProps = {
-        showLoveBtn: true
+        showLoveBtn: true,
+        gid: '',
     };
 
     constructor(props) {
         super(props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    /*componentWillReceiveProps(nextProps) {
         // console.log(this.props, nextProps)
-    }
+    }*/
 
     componentWillUnmount() {
     }
@@ -137,13 +139,13 @@ class UserItem extends Component {
                 </view>
                 <View className="flex-view-item" style="margin-left: auto;">
                     {this.props.showLoveBtn && this.props.user.uid !== this.props.uid ? (
-                        this.props.user.target && this.props.user.target.uid === this.props.uid ?
-                            <Button className="free-btn-bordernone" type="default"
+                        this.props.user.target ? (this.props.user.target.uid === this.props.uid ?
+                            <Button className="free-btn-bordernone" type="default" disabled
                                     hover-class="other-button-hover" onClick={this.onClick}>
                                 <View style="padding-top: 17px;">
                                     <MaterialIcons name='favorite' size={32} color='#ea4aaa'/>
                                 </View>
-                            </Button> :
+                            </Button> : null ):
                             <Button className="free-btn-bordernone" type="default"
                                     hover-class="other-button-hover" onClick={this.onClick}>
                                 <View style="padding-top: 17px;">

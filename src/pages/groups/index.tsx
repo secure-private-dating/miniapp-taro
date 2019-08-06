@@ -12,6 +12,10 @@ import {UserStateProps} from "../../reducers/user";
 import UserItem from "../../components/UserItem";
 import {ConfigStateProps} from "../../reducers/config";
 import GroupCreateItem from "../../components/GroupCreateItem";
+import {decode as decodeBase64, encode as encodeBase64} from "@stablelib/base64";
+import nacl from "tweetnacl";
+import {decode as decodeUTF8, encode as encodeUTF8} from "@stablelib/utf8";
+import {addMatched, update, updateTarget} from "../../actions/user";
 
 // #region 书写注意
 //
@@ -26,6 +30,12 @@ import GroupCreateItem from "../../components/GroupCreateItem";
 type PageStateProps = {
     user: UserStateProps;
     config: ConfigStateProps;
+}
+
+type PageDispatchProps = {
+    updateTarget: ({}) => void,
+    update: ({}) => void,
+    addMatched: ({}) => void
 }
 
 type PageOwnProps = {}
@@ -50,14 +60,24 @@ type PageState = {
     };
 }
 
-type IProps = PageStateProps & PageOwnProps
+type IProps = PageStateProps & PageOwnProps & PageDispatchProps
 
 interface Groups {
     props: IProps;
     state: PageState;
 }
 
-@connect(({user, config}) => ({user, config}))
+@connect(({user, config}) => ({user, config}), (dispatch) => ({
+    updateTarget(target) {
+        dispatch(updateTarget(target))
+    },
+    update(dict) {
+        dispatch(update(dict))
+    },
+    addMatched(matched) {
+        dispatch(addMatched(matched))
+    }
+}))
 class Groups extends Component {
 
     /**
@@ -96,6 +116,7 @@ class Groups extends Component {
 
     async componentDidMount() {
         try {
+            await this.loadData();
             let matched: any = [];
             for (let i in this.props.user.matched) {
                 const res = await Taro.request({
@@ -140,6 +161,160 @@ class Groups extends Component {
             console.log(e);
         }
     }
+
+    proceedData(d, gid) {
+        /* temporary hard code */
+        // load client's own keyPair from local storage
+        // lyh's key
+        // const ownkey = {publicKey: decodeBase64('ROh0E1mJOFEEx/z3A2S7sKm3ZT88vKIdIJ/Bpj1h1GY='), secretKey: decodeBase64('60qYjRlHzau5burcWwRJAwsujn5tCtiKt0j3qRkceWE=')}
+        // cyg's key
+        // const ownkey = {
+        //     publicKey: decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM='), secretKey: decodeBase64('bHOLf11eK1tqcVOvXzo9O6I6dUk8NOecOyCKPXge+6Y=')
+        // }
+        const ownkey = {
+            publicKey: decodeBase64(this.props.user.keyPair.publicKey),
+            secretKey: decodeBase64(this.props.user.keyPair.secretKey)
+        };
+        console.log('receive data, use ownkey:', ownkey);
+        const uid = this.props.user.uid;
+
+        // target is lyh
+        const target = this.props.user.target;
+        if (target == null) {
+            console.log("not target, skip data");
+            return;
+        }
+        const targetpubkey = decodeBase64(target.publicKey);
+        // target is cyg
+        // const targetpubkey = decodeBase64('b//rwWJqdFW9el5FW0xnxKQmNRLAR0kuUe/2qQoG9nM=')
+
+        const payload = nacl.box.open(decodeBase64(d.outercypher), decodeBase64(d.noncestr), decodeBase64(d.ephermeralpubkey), ownkey.secretKey)
+        if (payload == null) {
+            console.log('auth failed')
+        } else {
+            // your message
+            const utf8 = decodeUTF8(payload)
+            let prefix = utf8.substring(0, 9)
+            let contents = utf8.substring(9)
+            if (prefix === '[CONFESS]') {
+                console.log('receive confess')
+                const innercypher = '[RESPONS]' + contents
+                const ephemeralkey = nacl.box.keyPair()
+                // let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
+                // let noncestr = encodeBase64(noncearray)
+                // load targetpubkey
+                const outercypher = encodeBase64(nacl.box(encodeUTF8(innercypher), decodeBase64(d.noncestr), targetpubkey, ephemeralkey.secretKey))
+                const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey)
+                let noncestr = d.noncestr
+                const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
+                // send response message
+                Taro.request({
+                    url: this.props.config.baseUrl + 'api/message',
+                    method: "POST",
+                    data: data,
+                    header: {
+                        'content-type': 'application/x-www-form-urlencoded',
+                        'cookie': 'session=' + this.props.user.sid,
+                    }
+                }).then(res => {
+                    console.log(res.data);
+                    // this.setState({groups: res.data})
+                })
+            } else if (prefix === '[RESPONS]') {
+                console.log('receive response')
+                const plaintextarr = nacl.secretbox.open(decodeBase64(contents), decodeBase64(d.noncestr), ownkey.secretKey)
+                if (plaintextarr == null) {
+                    console.log('response auth failed')
+                } else {
+                    const plaintext = decodeUTF8(plaintextarr)
+                    console.log(plaintext)
+                    if (this.props.user.target) {
+                        this.props.addMatched({uid: this.props.user.target.uid});
+                    }
+                    let ownname = '[ACKNOWL]' + this.props.user.uid
+                    let noncearray = nacl.randomBytes(nacl.secretbox.nonceLength)
+                    let noncestr = encodeBase64(noncearray)
+                    const ephemeralkey = nacl.box.keyPair()
+                    const ephermeralpubkey = encodeBase64(ephemeralkey.publicKey)
+                    let boxarray = nacl.box(encodeUTF8(ownname), noncearray, targetpubkey, ephemeralkey.secretKey)
+                    let outercypher = encodeBase64(boxarray)
+                    const data = {outercypher, noncestr, uid, gid, ephermeralpubkey}
+                    // send ack message
+                    console.log(data)
+                    Taro.request({
+                        url: this.props.config.baseUrl + 'api/message',
+                        method: "POST",
+                        data: data,
+                        header: {
+                            'content-type': 'application/x-www-form-urlencoded',
+                            'cookie': 'session=' + this.props.user.sid,
+                        }
+                    }).then(res => {
+                        console.log(res.data);
+                        // this.setState({groups: res.data})
+                    })
+
+                }
+            } else if (prefix === '[ACKNOWL]') {
+                console.log('receive ack')
+                console.log(contents)
+                this.props.addMatched({uid: contents})
+                // TODO: pop up dialogue on success
+            }
+        }
+    }
+
+
+    async loadData() {
+
+        console.log(this.props.user);
+
+        const res = await Taro.request({
+            url: this.props.config.baseUrl + 'api/pull_message',
+            method: "POST",
+            data: {
+                'latest_message_id': this.props.user.latestMessageId
+            },
+            header: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'cookie': 'session=' + this.props.user.sid,
+            }
+        });
+        console.log('pull message:');
+        console.log(res.data);
+        let latestMessageId = JSON.parse(this.props.user.latestMessageId);
+        for (let gid in res.data) {
+            if (!res.data.hasOwnProperty(gid)) continue;
+            console.log('process gid:', gid);
+            const dataSize = res.data[gid].length;
+            if (dataSize) {
+                latestMessageId[gid] = res.data[gid][dataSize - 1]._id.$oid;
+                for (let i = 0; i < dataSize; i++) {
+                    console.log(res.data[gid][i]);
+                    this.proceedData(res.data[gid][i], gid);
+                }
+            }
+        }
+        console.log('updated latest message id', latestMessageId);
+        latestMessageId = JSON.stringify(latestMessageId);
+        await Taro.setStorage({key: 'latestMessageId', data: latestMessageId});
+        this.props.update({latestMessageId});
+
+
+        /*console.log('pull message:');
+        // console.log(res.data)
+        for (let d in res.data) {
+            console.log(res.data[d]);
+            this.proceedData(res.data[d])
+        }
+        // this.setState({groups: res.data})
+
+        console.log(this.props.user);
+        Taro.redirectTo({
+            url: '/pages/groups/index'
+        })*/
+    }
+
 
     render() {
         return (
