@@ -11,6 +11,7 @@ import {connect} from "@tarojs/redux";
 import {UserStateProps, MatchStateProps} from "../../reducers/user";
 import UserItem from "../../components/UserItem";
 import {ConfigStateProps} from "../../reducers/config";
+import GroupCreate from "../../components/GroupCreate";
 
 // #region 书写注意
 //
@@ -95,7 +96,7 @@ class Groups extends Component {
 
     async componentDidMount() {
         try {
-            let matched: MatchStateProps = [];
+            let matched: any = [];
             for (let i in this.props.user.matched) {
                 const res = await Taro.request({
                     url: this.props.config.baseUrl + 'api/user',
@@ -161,6 +162,7 @@ class Groups extends Component {
                     </View> : null}
                 <View className="section" style={{width: '85%'}}>
                     <View className="section__title">Groups:</View>
+                    <GroupCreate/>
                     {this.state.groups.map((value) =>
                         <GroupItem gid={value._id.$oid} name={value.name} is_entered={false}
                                    avatar={value.avatar}/>
